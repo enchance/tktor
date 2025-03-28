@@ -1,0 +1,3 @@
+# Tktor
+
+Ticker app
