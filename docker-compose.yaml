@@ -1,0 +1,79 @@
+x-base: &envbase
+  restart: no
+  tty: true
+  env_file:
+    - .env
+
+services:
+  app:
+    image: tktor-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: tktor
+    <<: *envbase
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    develop:
+      watch:
+        - action: rebuild
+          path: Dockerfile.dev
+        - action: rebuild
+          path: requirements.txt
+    depends_on:
+      - pgdb
+#      - redis
+#      - mailhog
+    command: ["fastapi", "dev", "--host", "0.0.0.0"]
+
+  pgdb:
+    image: tktor-postgres:latest
+    build:
+      context: .
+      dockerfile: ./dev/Dockerfile.postgres.dev
+      additional_contexts:
+        dev: ./dev
+    container_name: tktordb
+    <<: *envbase
+    ports:
+      - "5432:5432"
+    volumes:
+      - tktordb:/var/lib/postgresql/data
+    develop:
+      watch:
+        - action: rebuild
+          path: ./dev/Dockerfile.postgres.dev
+#        - action: rebuild
+#          path: dev/sql/01-init.sql
+#        - action: rebuild
+#          path: dev/sql/02-tables.sql
+#        - action: rebuild
+#          path: dev/sql/03-triggers.sql
+#        - action: rebuild
+#          path: dev/sql/04-seeders.sql
+#  #        - action: rebuild
+#  #          path: dev/sql/docker-build.sh
+
+#  redis:
+#    image: redis/redis-stack:latest
+#    container_name: tktorcache
+#    <<: *envbase
+#    ports:
+#      - "6379:6379"
+#      - "8010:8001"
+#    volumes:
+#      - tktorcache:/data
+
+#  mailhog:
+#    container_name: mail-service
+#    image: mailhog/mailhog:latest
+#    restart: no
+#    ports:
+#      - "1025:1025"
+#      - "8025:8025"
+
+volumes:
+  tktordb:
+#  tktorcache:

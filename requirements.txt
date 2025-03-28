@@ -1,0 +1,19 @@
+# Primary
+fastapi[standard]
+sqlmodel
+asyncpg
+icecream
+python-decouple
+arrow
+orjson
+firebase-admin
+pyrebase4
+python-json-logger
+slowapi
+
+# Redis
+redis-om[async]
+hiredis
+
+# Production only
+gunicorn
