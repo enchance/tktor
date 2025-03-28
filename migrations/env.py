@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
+from alembic import context # noqa
 from sqlmodel import SQLModel
 
 
@@ -26,7 +26,9 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
-from models import common
+# from models.auth_models import ProfileMod
+# from models import auth_models
+from auth import account
 target_metadata = SQLModel.metadata
 
 

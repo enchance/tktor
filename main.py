@@ -9,9 +9,17 @@ from slowapi import Limiter, _rate_limit_exceeded_handler  # noqa
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from sqlmodel import select
+from sqlalchemy.orm import selectinload
 
 from core import ic
 from core.config import settings as s
+# from auth import account as authacct
+from auth.account import Account
+from core import SessionDep
+from models.auth_models import ProfileMod, AddressMod
+
+
 # from routes import accountrouter, authrouter
 # from dev.seeder import devrouter
 # from tests.routes import testrouter
@@ -89,3 +97,36 @@ async def root(request: Request):
 async def healthz(request: Request):
     # ic('healthz')
     return Response(status_code=200)
+
+
+@app.get('/foo')
+async def foo(session: SessionDep):
+    # account = Account(
+    #     email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
+    #     profile=ProfileMod(firstname='haha'),
+    #     addresses=[
+    #         AddressMod(),
+    #         AddressMod(),
+    #     ]
+    # )
+    # session.add(account)
+    # await session.commit()
+    # await session.refresh(account)
+    # ic(type(account), account)
+
+    stmt = (select(Account).where(Account.email == 'aaa@aaa.com')
+            .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses)))
+    exec_ = await session.exec(stmt)
+    account = exec_.one_or_none()
+
+    # await session.refresh(account, attribute_names=['profile'])
+    # account.profile.firstname = 'boo'
+    # session.add(account.profile)
+    # await session.commit()
+    ic(account.bans, account.profile, account.addresses)
+    ic(account.addresses[0].model_dump())
+
+    # profile = await session.get(ProfileMod, 5)
+    # ic(profile.account)
+
+    return True
