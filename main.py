@@ -17,7 +17,7 @@ from core.config import settings as s
 # from auth import account as authacct
 from auth.account import Account
 from core import SessionDep
-from models.auth_models import ProfileMod, AddressMod
+from models.auth_models import ProfileMod, AddressMod, AccountMod
 from models.common_models import OptionMod
 
 
@@ -102,25 +102,25 @@ async def healthz(request: Request):
 
 @app.get('/foo')
 async def foo(session: SessionDep):
-    # account = Account(
-    #     email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
-    #     profile=ProfileMod(firstname='haha'),
-    #     addresses=[
-    #         AddressMod(),
-    #         AddressMod(),
-    #     ],
-    #     options_rel=[
-    #         OptionMod(name='foo', value='bar')
-    #     ]
-    # )
-    # session.add(account)
-    # await session.commit()
-    # await session.refresh(account)
-    # ic(type(account), account)
+    account = Account(
+        email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
+        profile=ProfileMod(firstname='haha', mobile=['123', '456']),
+        addresses=[
+            AddressMod(),
+            AddressMod(),
+        ],
+        options_rel=[
+            OptionMod(name='foo', value='bar')
+        ]
+    )
+    session.add(account)
+    await session.commit()
+    await session.refresh(account)
+    ic(type(account), account)
 
-    stmt = (select(Account).where(Account.email == 'aaa@aaa.com')  # noqa
-            .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses),  # noqa
-                     selectinload(Account.options_rel)))  # noqa
+    stmt = select(Account).where(Account.email == 'aaa@aaa.com')\
+            .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses),
+                     selectinload(Account.options_rel))
     exec_ = await session.exec(stmt)
     account = exec_.one_or_none()
 
@@ -134,7 +134,8 @@ async def foo(session: SessionDep):
     # account.profile.firstname = 'boo'
     # session.add(account.profile)
     # await session.commit()
-    ic(account.bans, account.profile, account.addresses, account.options_rel)
+    # profile: ProfileMod = account.profile
+    ic(account.bans, account.profile.firstname, account.addresses, account.options_rel)
 
     # profile = await session.get(ProfileMod, 5)
     # ic(profile.account)

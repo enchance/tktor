@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from sqlmodel import SQLModel, Relationship, ForeignKey
 
 from models import auth_models as authmod
+from models.auth_models import ProfileMod
 
 
 class Account(authmod.AccountMod, SQLModel, table=True):
