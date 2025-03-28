@@ -1,9 +1,7 @@
-from typing import Annotated
 from sqlmodel import update, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from core import ic
-from core.models import Option
+from models.common import Option
 
 
 class OptionsSvc:

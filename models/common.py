@@ -3,9 +3,6 @@ from sqlmodel import SQLModel, Column, Field, DateTime, func, TEXT, Relationship
 from sqlalchemy.orm import declared_attr
 from pydantic.fields import PrivateAttr
 
-from core import ic
-from .utils import modstr
-
 
 nowtz = text('CURRENT_TIMESTAMP')
 
@@ -71,17 +68,17 @@ class MetaMixin:
 
 class Option(IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'app_option'
-    __table_args__ = (UniqueConstraint('name', 'owner_id'),)
+    # __table_args__ = (UniqueConstraint('name', 'owner_id'),)
     name: str = Field(max_length=50)
     value: str = Field(sa_column=Column(TEXT, default='', server_default=''))
     type: int | None = Field(default=2, sa_column=Column(Integer, server_default='2'))
     description: str | None = Field(sa_column=Column(TEXT, default='', server_default=''))
-    owner_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE',
-                                 sa_column_kwargs={'server_default': text('NULL')})
+    # owner_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE',
+    #                              sa_column_kwargs={'server_default': text('NULL')})
 
     # Relationships
-    owner: 'Account' = Relationship(back_populates='options_rel')  # noqa
+    # owner: 'Account' = Relationship(back_populates='options_rel')  # noqa
 
 
     def __repr__(self) -> str:
-        return modstr(self, 'name')
+        return f'<Option {self.id}: {self.name}>'
