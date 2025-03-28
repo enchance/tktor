@@ -26,7 +26,6 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
-# from models.auth_models import ProfileMod
 # from models import auth_models
 from auth import account
 target_metadata = SQLModel.metadata

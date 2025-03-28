@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from abc import ABC
 from typing import Union, Any, Self
 from datetime import datetime
 from sqlmodel import (SQLModel, Field, Column, String, text, ForeignKey, Relationship, Text, Boolean,
@@ -39,6 +40,16 @@ class BanMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
 #     arbitrary_types_allowed = True
 
 
+class AddressMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
+    __tablename__ = 'auth_address'
+    address1: str = Field(max_length=199, default='')
+    address2: str = Field(max_length=199, default='')
+    city: str = Field(max_length=199, default='')
+    zip: str = Field(max_length=199, default='')
+    owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    account: 'account.Account' = Relationship(back_populates='addresses')
+
+
 class ProfileMod(SQLModel, table=True):
     __tablename__ = 'auth_profile'
     id: int | None = Field(primary_key=True, foreign_key='auth_account.id', ondelete='CASCADE')
@@ -51,17 +62,7 @@ class ProfileMod(SQLModel, table=True):
     account: 'account.Account' = Relationship(back_populates='profile')
 
 
-class AddressMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
-    __tablename__ = 'auth_address'
-    address1: str = Field(max_length=199, default='')
-    address2: str = Field(max_length=199, default='')
-    city: str = Field(max_length=199, default='')
-    zip: str = Field(max_length=199, default='')
-    owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-    account: 'account.Account' = Relationship(back_populates='addresses')
-
-
-class AccountMod(com.MetaMixin, com.IntPkMixin, com.DTMixin):
+class AccountMod(com.MetaMixin, com.IntPkMixin, com.DTMixin, ABC):
     uid: str = Field(unique=True, nullable=True)
     email: str = Field(max_length=199)
     username: str = Field(sa_column=Column(String(199), unique=True, nullable=True))
@@ -73,12 +74,5 @@ class AccountMod(com.MetaMixin, com.IntPkMixin, com.DTMixin):
     is_banned: bool = Field(default=False)
     is_verified: bool = Field(default=False)
     # --
-
     # meta: 'AccountMeta' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False})
-    # options_rel: list['com.Option'] = Relationship(back_populates='owner')
-
-    # class Config:
-    #     arbitrary_types_allowed = True
-
-    # def __repr__(self):
-    #     return f'<Account {self.id}: {self.email}>'  # noqa
+    #

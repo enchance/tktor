@@ -67,19 +67,18 @@ class MetaMixin:
 #         return modstr(self, 'name')
 
 
-# class Option(IntPkMixin, DTMixin, SQLModel, table=True):
-#     __tablename__ = 'app_option'
-#     # __table_args__ = (UniqueConstraint('name', 'owner_id'),)
-#     name: str = Field(max_length=50)
-#     value: str = Field(sa_column=Column(TEXT, default='', server_default=''))
-#     type: int | None = Field(default=2, sa_column=Column(Integer, server_default='2'))
-#     description: str | None = Field(sa_column=Column(TEXT, default='', server_default=''))
-#     # owner_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE',
-#     #                              sa_column_kwargs={'server_default': text('NULL')})
-#
-#     # Relationships
-#     # owner: 'Account' = Relationship(back_populates='options_rel')  # noqa
-#
-#
-#     def __repr__(self) -> str:
-#         return f'<Option {self.id}: {self.name}>'   # noqa
+class OptionMod(IntPkMixin, DTMixin, SQLModel, table=True):
+    __tablename__ = 'app_option'
+    __table_args__ = (UniqueConstraint('name', 'owner_id'),)
+    name: str = Field(max_length=50)
+    value: str = Field(sa_column=Column(TEXT, default='', server_default=''))
+    type: int | None = Field(default=2, sa_column=Column(Integer, server_default='2'))
+    description: str | None = Field(sa_column=Column(TEXT, default='', server_default=''))
+    owner_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE',
+                                 sa_column_kwargs={'server_default': text('NULL')})
+    # --
+    owner: 'Account' = Relationship(back_populates='options_rel')  # noqa
+
+
+    def __repr__(self) -> str:
+        return f'<Option {self.id}: {self.name}>'   # noqa
