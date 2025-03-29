@@ -15,12 +15,10 @@ from sqlalchemy.orm import selectinload
 from core import ic
 from core.config import settings as s
 # from auth import account as authacct
-from auth.account import Account
+from auth import Account
 from core import SessionDep
-from models.auth_models import ProfileMod, AddressMod, AccountMod
+from models.auth_models import ProfileMod, AddressMod
 from models.common_models import OptionMod
-
-
 # from routes import accountrouter, authrouter
 # from dev.seeder import devrouter
 # from tests.routes import testrouter

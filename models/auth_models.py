@@ -1,22 +1,18 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 from abc import ABC
-from typing import Union, Any, Self
 from datetime import datetime
-from sqlmodel import (SQLModel, Field, Column, String, text, ForeignKey, Relationship, Text, Boolean,
+from sqlmodel import (SQLModel, Field, Column, String, text, Relationship, Text, Boolean,
                       DateTime, UniqueConstraint)
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
-from . import common_models as com
-
-
-# from auth import account
+from .common_models import IntPkMixin, DTMixin, MetaMixin
 
 
 if TYPE_CHECKING:
-    from auth.account import Account
+    from auth import Account
 
 
-class BanMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
+class BanMod(IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'auth_ban'
     recipient_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
@@ -29,13 +25,14 @@ class BanMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
         back_populates='ban_owners', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'})
 
 
-class AddressMod(com.IntPkMixin, com.DTMixin, SQLModel, table=True):
+class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'auth_address'
     address1: str = Field(max_length=199, default='')
     address2: str = Field(max_length=199, default='')
     city: str = Field(max_length=199, default='')
     zip: str = Field(max_length=199, default='')
     owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    # --
     account: 'Account' = Relationship(back_populates='addresses')
 
 
@@ -53,7 +50,7 @@ class ProfileMod(SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='profile')
 
 
-class AccountMod(com.MetaMixin, com.IntPkMixin, com.DTMixin, ABC):
+class AccountMod(MetaMixin, IntPkMixin, DTMixin, ABC):
     uid: str = Field(unique=True, nullable=True)
     email: str = Field(max_length=199)
     username: str = Field(sa_column=Column(String(199), unique=True, nullable=True))

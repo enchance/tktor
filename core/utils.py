@@ -1,24 +1,24 @@
-def modstr(instance, *attr: str, data: list | None = None, onlyid: bool = False) -> str:
-    """
-    The field to display for an object's __str__. If the field doesn't exist then an
-    alternative is displayed.
-    :param instance:    Instance object
-    :param attr:        Field/s name to get data from if it exists
-    :param data:        Any data that's not a field
-    :param onlyid:      Only return the id
-    :return:            str
-    """
-    clsname = instance.__class__.__name__
-    data = data or []
-    ll = [getattr(instance, i) for i in attr if hasattr(instance, i) and getattr(instance, i)]
-    ll += [i for i in data if i]
-
-    try:
-        if onlyid or not ll:
-            return f'<{clsname}: {instance.id}>'
-        return f'<{clsname} {instance.id}: {", ".join(ll)}>'
-    except AttributeError:
-        return f'<{clsname}>'
+# def modstr(instance, *attr: str, data: list | None = None, onlyid: bool = False) -> str:
+#     """
+#     The field to display for an object's __str__. If the field doesn't exist then an
+#     alternative is displayed.
+#     :param instance:    Instance object
+#     :param attr:        Field/s name to get data from if it exists
+#     :param data:        Any data that's not a field
+#     :param onlyid:      Only return the id
+#     :return:            str
+#     """
+#     clsname = instance.__class__.__name__
+#     data = data or []
+#     ll = [getattr(instance, i) for i in attr if hasattr(instance, i) and getattr(instance, i)]
+#     ll += [i for i in data if i]
+#
+#     try:
+#         if onlyid or not ll:
+#             return f'<{clsname}: {instance.id}>'
+#         return f'<{clsname} {instance.id}: {", ".join(ll)}>'
+#     except AttributeError:
+#         return f'<{clsname}>'
 
 
 def split_fullname(fullname: str | None, default: str = '',
@@ -94,6 +94,12 @@ def reduce_permissions(permissions: list[str]) -> list[str]:
 
 
 def name_extractor(email: str, **kwargs) -> tuple[str, str, str, dict]:
+    """
+    Try to extract the name of the user from their email.
+    :param email:   Account email
+    :param kwargs:  Overridden values
+    :return:        tuple
+    """
     email_user = str(email).split('@')[0]
     firstname = kwargs.pop('firstname', '')
     lastname = kwargs.pop('lastname', '')

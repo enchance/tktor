@@ -1,11 +1,10 @@
-import sqlalchemy as sa
-from sqlmodel import SQLModel, Relationship, ForeignKey
+from sqlmodel import SQLModel, Relationship
 
-from models import auth_models as authmod
-from models.auth_models import ProfileMod
+from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod
+from models.common_models import OptionMod
 
 
-class Account(authmod.AccountMod, SQLModel, table=True):
+class Account(AccountMod, SQLModel, table=True):
     __tablename__ = 'auth_account'
     profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False})
     options_rel: list['OptionMod'] = Relationship(back_populates='owner')
