@@ -1,10 +1,9 @@
 from typing import TYPE_CHECKING
 from abc import ABC
-from datetime import datetime
-from sqlmodel import (SQLModel, Field, Column, String, text, Relationship, Text, Boolean,
-                      DateTime, UniqueConstraint)
+from sqlmodel import (SQLModel, Field, Column, String, text, Relationship, Text, Boolean)
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
+from . import modstr
 from .common_models import IntPkMixin, DTMixin, MetaMixin
 
 
@@ -23,6 +22,10 @@ class BanMod(IntPkMixin, DTMixin, SQLModel, table=True):
         back_populates='bans', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'})
     banner: 'Account' = Relationship(
         back_populates='ban_owners', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'})
+
+
+    def __str__(self):
+        return modstr(self, 'recipient_id', 'is_active')
 
 
 class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
@@ -52,7 +55,7 @@ class ProfileMod(SQLModel, table=True):
 
 class AccountMod(MetaMixin, IntPkMixin, DTMixin, ABC):
     uid: str = Field(unique=True, nullable=True)
-    email: str = Field(max_length=199)
+    email: str = Field(max_length=199, unique=True)
     username: str = Field(sa_column=Column(String(199), unique=True, nullable=True))
     display: str = Field(sa_column=Column(String(199), default='', server_default=''))
     avatar: str = Field(sa_column=Column(Text, default='', server_default=''))
@@ -61,3 +64,9 @@ class AccountMod(MetaMixin, IntPkMixin, DTMixin, ABC):
                                                  default_factory=list)
     is_banned: bool = Field(default=False)
     is_verified: bool = Field(default=False)
+
+
+class RoleMod(MetaMixin, DTMixin, ABC):
+    name: str = Field(max_length=20, primary_key=True)
+    permissions: set[str] = Field(default_factory=set, sa_column=Column(ARRAY(String(199)), server_default='{}'))
+    is_active: bool = Field(default=True, sa_column=Column(Boolean, index=True, server_default='TRUE'))
