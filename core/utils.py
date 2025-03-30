@@ -50,26 +50,6 @@ def split_fullname(fullname: str | None, default: str = '',
     return first, last
 
 
-def reduce_permissions(permissions: list[str]) -> list[str]:
-    """
-    Merge permissions by removing any items which start with '-'. For use in collating permissions.
-    Duplicates are removed in the process.
-    :param permissions: List of permissions
-    :return:            Filtered permissions list
-    """
-    include = set()
-    exclude = set()
-
-    for perm in permissions:
-        perm = perm.strip()
-        if perm.startswith('-'):
-            exclude.add(perm.strip()[1:])
-        else:
-            include.add(perm.strip())  # noqa
-    resultlist = include - exclude
-    return list(resultlist)
-
-
 def name_extractor(email: str, **kwargs) -> tuple[str, str, str, dict]:
     """
     Try to extract the name of the user from their email.
