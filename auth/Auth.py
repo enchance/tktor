@@ -49,7 +49,6 @@ class Account(AccountMod, SQLModel, table=True):
         return 'superadmin' in self.roles  # noqa
 
 
-    # TESTME: Untested
     @property
     def permissions(self) -> list[str]:
         """
@@ -76,7 +75,6 @@ class Account(AccountMod, SQLModel, table=True):
         return self._reduce_permissions(ll)
 
 
-    # TESTME: Untested
     @staticmethod
     def _reduce_permissions(permissions: list[str]) -> list[str]:
         """
@@ -98,7 +96,6 @@ class Account(AccountMod, SQLModel, table=True):
         return list(resultlist)
 
 
-    # TESTME: Untested
     @property
     def options(self) -> Union['UserOptions', None]:  # noqa
         """Generate the options for the account."""
@@ -113,7 +110,6 @@ class Account(AccountMod, SQLModel, table=True):
             return
 
 
-    # TESTME: Untested
     @classmethod
     async def create(cls, *, uid: str, email: str, provider: str, avatar: str = '', cache: bool = True,
                      is_banned: bool = False, session: AsyncSession, username: str | None = None,
@@ -162,7 +158,6 @@ class Account(AccountMod, SQLModel, table=True):
         return account
 
 
-    # TESTME: Untested
     @staticmethod
     def set_cache(account: 'Account', *, options: dict) -> 'AccountCache':  # noqa
         """
@@ -184,7 +179,6 @@ class Account(AccountMod, SQLModel, table=True):
             ic(e)
 
 
-    # TESTME: Untested
     def update_cache(self, data: dict) -> bool:
         """
         Update the account cache based on data.
@@ -206,7 +200,6 @@ class Role(RoleMod, SQLModel, table=True):
         return modstr(self, 'name')
 
 
-    # TESTME: Untested
     @classmethod
     async def get(cls, name: str, *, use_db: bool = False, session: AsyncSession) -> set[str]:
         """
@@ -245,7 +238,6 @@ class Role(RoleMod, SQLModel, table=True):
             raise AppException('ROLE_RETRIEVAL_FAILED')
 
 
-    # TESTME: Untested
     @staticmethod
     def get_cache(name: str) -> set[str] | None:  # noqa
         """
@@ -263,7 +255,6 @@ class Role(RoleMod, SQLModel, table=True):
             return
 
 
-    # TESTME: Untested
     @staticmethod
     def set_cache(name: str, permissions: set[str], replace: bool = True) -> bool:  # noqa
         """

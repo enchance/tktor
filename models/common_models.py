@@ -1,5 +1,4 @@
 from uuid import UUID, uuid4
-from datetime import datetime
 from sqlmodel import SQLModel, Column, Field, DateTime, func, TEXT, Relationship, UniqueConstraint, text, Integer
 from sqlalchemy.orm import declared_attr
 from pydantic.fields import PrivateAttr

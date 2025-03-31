@@ -23,6 +23,8 @@ from models.common_models import OptionMod
 # from dev.seeder import devrouter
 # from tests.routes import testrouter
 
+# TODO: Review the test to ban/unban as the fields have changed
+
 
 limiter = Limiter(key_func=get_remote_address, default_limits=['120/minute'])
 

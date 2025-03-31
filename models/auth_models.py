@@ -1,22 +1,25 @@
 from typing import TYPE_CHECKING
 from abc import ABC
-from sqlmodel import (SQLModel, Field, Column, String, text, Relationship, Text, Boolean)
+from sqlmodel import (SQLModel, Field, Column, String, text, Relationship, Text, Boolean, DateTime, func)
+from datetime import datetime
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from . import modstr
-from .common_models import IntPkMixin, DTMixin, MetaMixin
+from .common_models import IntPkMixin, DTMixin, MetaMixin, UpdatedAtMixin
 
 
 if TYPE_CHECKING:
     from auth import Account
 
 
-class BanMod(IntPkMixin, DTMixin, SQLModel, table=True):
+class BanMod(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
     __tablename__ = 'auth_ban'
     recipient_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     notes: str = Field(sa_column=Column(Text, default='', server_default=''))
     is_active: bool = Field(default=True)
+    banned_at: datetime | None = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=True))
     # --
     account: 'Account' = Relationship(
         back_populates='bans', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'})
