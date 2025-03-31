@@ -2,22 +2,23 @@ FROM ghcr.io/railwayapp-templates/postgres-ssl:16
 LABEL authors="enchance"
 
 ENV PIP_ROOT_USER_ACTION=ignore
-ENV CONTAINER_HOST_NAME=tktordb
+#ENV CONTAINER_HOST_NAME=tktordb
 
 RUN apt update && apt upgrade -y \
     && apt install -y curl tree vim
 
 WORKDIR /root
-COPY --from=dev ./bashrc .
+COPY dev/bashrc .
 
-WORKDIR /docker-entrypoint-initdb.d
+#WORKDIR /docker-entrypoint-initdb.d
 #COPY sql/01-init.sql .
 #COPY dev/sql/02-tables.sql .
 
-#WORKDIR /tmp
+WORKDIR /tmp
+COPY dev/sql/seeder.sql .
 ## Run after migrations
 #COPY dev/sql/03-triggers.sql .
-#COPY dev/sql/04-seeders.sql .
+#COPY dev/sql/04-seeder.sql .
 
 #HEALTHCHECK --start-period=30s --interval=3m --retries=5 --timeout=10s \
 #    CMD pg_isready -U postgres || exit 1

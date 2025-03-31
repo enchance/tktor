@@ -20,10 +20,10 @@ class TestDev:
     @mark.dev
     async def test_dev(self, session):
         try:
-            account = await Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                           firstname=fake.first_name(), lastname=fake.last_name(), website=fake.url(),
-                                           username=fake.user_name(), display=fake.word(), gender='male',
-                                           social=dict(a='b', c=24), provider='google', session=session)
+            # account = await Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
+            #                                firstname=fake.first_name(), lastname=fake.last_name(), website=fake.url(),
+            #                                username=fake.user_name(), display=fake.word(), gender='male',
+            #                                social=dict(a='b', c=24), provider='google', session=session)
             # ic(account)
 
             # x = {'comment_order': 'desc',

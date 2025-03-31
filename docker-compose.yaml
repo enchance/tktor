@@ -32,9 +32,7 @@ services:
     image: tktor-postgres:latest
     build:
       context: .
-      dockerfile: ./dev/Dockerfile.postgres.dev
-      additional_contexts:
-        dev: ./dev
+      dockerfile: dev/Dockerfile.postgres.dev
     container_name: tktordb
     <<: *envbase
     ports:
@@ -44,17 +42,9 @@ services:
     develop:
       watch:
         - action: rebuild
-          path: ./dev/Dockerfile.postgres.dev
-#        - action: rebuild
-#          path: dev/sql/01-init.sql
-#        - action: rebuild
-#          path: dev/sql/02-tables.sql
-#        - action: rebuild
-#          path: dev/sql/03-triggers.sql
-#        - action: rebuild
-#          path: dev/sql/04-seeders.sql
-#  #        - action: rebuild
-#  #          path: dev/sql/docker-build.sh
+          path: dev/Dockerfile.postgres.dev
+        - action: rebuild
+          path: dev/sql/seeder.sql
 
   redis:
     image: redis/redis-stack:latest
