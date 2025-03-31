@@ -56,6 +56,12 @@ class ProfileMod(SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='profile')
 
 
+    @property
+    def fullname(self) -> str:
+        fullname = f'{self.firstname} {self.middlename} {self.lastname}'
+        return ' '.join(fullname.split())
+
+
 class AccountMod(MetaMixin, IntPkMixin, DTMixin, ABC):
     uid: str = Field(unique=True, nullable=True)
     email: str = Field(max_length=199, unique=True)
