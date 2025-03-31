@@ -3,7 +3,7 @@ from fastapi import FastAPI, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from starlette.datastructures import State
-# from redis_om import Migrator
+from redis_om import Migrator
 from firebase_admin import credentials, initialize_app
 from slowapi import Limiter, _rate_limit_exceeded_handler  # noqa
 from slowapi.middleware import SlowAPIMiddleware
@@ -36,7 +36,7 @@ async def lifespan(_: FastAPI):
     initialize_app(creds)
     ic('[Fireabase inititialized in Account]')
 
-    # Migrator().run()
+    Migrator().run()
     ic('[STARTUP_ACCOUNT_COMPLETE]')
     yield
     ic('[SHUTDOWN_ACCOUNT_COMPLETE]')
@@ -101,7 +101,7 @@ async def healthz(request: Request):
 
 
 @app.get('/foo')
-async def foo(session: SessionDep):
+async def foo(request: Request, session: SessionDep):
     account = Account(
         email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
         profile=ProfileMod(firstname='haha', mobile=['123', '456']),

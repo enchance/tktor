@@ -14,7 +14,8 @@ COPY ./dev/bashrc .
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --upgrade pip --no-cache-dir --upgrade -r requirements.txt
+RUN pip install --upgrade pip --no-cache-dir --upgrade -r requirements.txt \
+    && pip freeze > requirements.txt
 COPY . .
 
 #HEALTHCHECK --start-period=30s --interval=30s --retries=5 --timeout=10s \

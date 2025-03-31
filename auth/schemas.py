@@ -5,13 +5,11 @@ from redis_om import JsonModel, Field
 
 from core import ic, logger
 from core.config import settings as s
+from auth import Auth as authmd
 
 
 # from core.schemas import SystemOptionsSchema
 # from account import models
-
-if TYPE_CHECKING:
-    from .Auth import Account
 
 
 class RoleCache(JsonModel):
@@ -71,7 +69,7 @@ class AccountCache(BaseAccount, JsonModel):
             # else:
             #     d['banned_at'] = datetime.fromisoformat(d['banned_at'])
 
-            account = Account(**d, banned_by_id=None)  # noqa
+            account = authmd.Account(**d, banned_by_id=None)  # noqa
             account.is_cache = True
             return account
         except Exception as e:

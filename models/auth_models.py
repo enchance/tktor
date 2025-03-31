@@ -44,13 +44,14 @@ class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
 
 class ProfileMod(SQLModel, table=True):
     __tablename__ = 'auth_profile'
-    id: int | None = Field(primary_key=True, foreign_key='auth_account.id', ondelete='CASCADE')
+    id: int | None = Field(primary_key=True, foreign_key='auth_account.id', unique=True, ondelete='CASCADE')
     firstname: str = Field(sa_column=Column(Text, default='', server_default=''))
     middlename: str = Field(sa_column=Column(Text, default='', server_default=''))
     lastname: str = Field(sa_column=Column(Text, default='', server_default=''))
     mobile: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
     telephone: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
-    gender: str = Field(sa_column=Column(String(20), default='', server_default=''))
+    gender: str = Field(sa_column=Column(String(50), default='', server_default=''))
+    # owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
     # --
     account: 'Account' = Relationship(back_populates='profile')

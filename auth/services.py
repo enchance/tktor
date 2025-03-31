@@ -2,9 +2,13 @@ from typing import TYPE_CHECKING, Union
 from sqlmodel import update, select, func
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from core import NotFoundException, logger
+from core import NotFoundException, logger, ic
 from core.config import settings as s
-from .Auth import Account, Role, BanMod
+from auth import Auth as authmd
+# from .Auth import Account, Role, BanMod
+from models.auth_models import BanMod
+from models.common_models import OptionMod
+
 
 
 class RoleSvc:
@@ -17,12 +21,12 @@ class RoleSvc:
         :param session:     AsyncSession
         :return:            Role
         """
-        return await session.get(Role, name)
+        return await session.get(authmd.Role, name)
 
 
 class AccountSvc:
     @staticmethod
-    async def get_by_uid(uid: str, *, session: AsyncSession) -> Account:
+    async def get_by_uid(uid: str, *, session: AsyncSession) -> 'Account':
         """
         Return an Account instance by its uid.
         :param uid:     Account uid
@@ -31,7 +35,7 @@ class AccountSvc:
         :raises:        NotFoundException
         """
         try:
-            stmt = select(Account).where(Account.uid == uid)
+            stmt = select(authmd.Account).where(authmd.Account.uid == uid)
             exec_ = await session.exec(stmt)
             if account := exec_.one_or_none():
                 return account
@@ -42,7 +46,7 @@ class AccountSvc:
 
 
     @staticmethod
-    async def get_by_email(email: str, *, session: AsyncSession) -> Account:
+    async def get_by_email(email: str, *, session: AsyncSession) -> 'Account':
         """
         Return an Account instance by its email.
         :param email:   Account email
@@ -51,7 +55,7 @@ class AccountSvc:
         :raises:        NotFoundException
         """
         try:
-            stmt = select(Account).where(Account.email == email)
+            stmt = select(authmd.Account).where(authmd.Account.email == email)
             exec_ = await session.exec(stmt)  # type: ignore
             if account := exec_.one_or_none():
                 return account
@@ -69,7 +73,7 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:
         """
-        stmt = select(models.Option.name, models.Option.value).where(models.Option.owner_id == id_)  # noqa
+        stmt = select(OptionMod.name, OptionMod.value).where(OptionMod.owner_id == id_)  # noqa
         exec_ = await session.exec(stmt)
         if data := exec_.all():
             return dict(data)
@@ -101,7 +105,7 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:            bool
         """
-        stmt = select(Account.uid).where(Account.email == email)
+        stmt = select(authmd.Account.uid).where(authmd.Account.email == email)
         exec_ = await session.exec(stmt)
         if _ := exec_.one_or_none():
             logger.warn(dict(message=f"Account {email} not found", id=email))
@@ -118,7 +122,7 @@ class AccountSvc:
         :return:            bool
         """
         try:
-            stmt = select(Account.uid).where(Account.username == username)
+            stmt = select(authmd.Account.uid).where(authmd.Account.username == username)
             exec_ = await session.exec(stmt)
             if _ := exec_.one_or_none():
                 logger.warn(dict(message=f"Account {username} not found", id=username))
@@ -133,7 +137,7 @@ class AccountSvc:
 
     @staticmethod
     async def ban_user(*, authorization: 'Account', to_ban: 'Account', notes: str,
-                       session: AsyncSession) -> Account:  # noqa
+                       session: AsyncSession) -> 'Account':  # noqa
         """
         Ban an account.
         :param authorization:   Account that does the banning
@@ -159,7 +163,7 @@ class AccountSvc:
 
 
     @staticmethod
-    async def unban_user(*, authorization: 'Account', to_ban: 'Account', session: AsyncSession) -> (Account):  # noqa
+    async def unban_user(*, authorization: 'Account', to_ban: 'Account', session: AsyncSession) -> 'Account':  # noqa
         """
         Unban an account.
         :param authorization:   Account that does the banning

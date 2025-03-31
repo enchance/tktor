@@ -8,22 +8,24 @@ from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod, RoleM
 from models.common_models import OptionMod
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
-from auth import enums
+from auth import enums, schemas, services as svc
+from dev.data import SEED_USER_OPTIONS
 
 
 if TYPE_CHECKING:
-    from . import AccountSvc, RoleSvc, AccountCache, UserOptions
+    from . import RoleSvc
 
 
 class Account(AccountMod, SQLModel, table=True):
     __tablename__ = 'auth_account'
-    profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False})
-    options_rel: list['OptionMod'] = Relationship(back_populates='owner')
+    profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
+                                         cascade_delete=True)
+    options_rel: list['OptionMod'] = Relationship(back_populates='owner', cascade_delete=True)
     addresses: list['AddressMod'] = Relationship(back_populates='account')
     bans: list['BanMod'] = Relationship(
-        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'})
+        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'}, cascade_delete=True)
     ban_owners: list['BanMod'] = Relationship(
-        back_populates='banner', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'})
+        back_populates='banner', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'}, cascade_delete=True)
 
 
     def __repr__(self):
@@ -102,7 +104,7 @@ class Account(AccountMod, SQLModel, table=True):
         """Generate the options for the account."""
         try:
             options_cache = AccountCache.get(self.uid).options  # noqa
-            return UserOptions(**options_cache)
+            return schemas.UserOptions(**options_cache)
         except NotFoundError:
             # TODO: Recache account with Celery
             return
@@ -125,13 +127,13 @@ class Account(AccountMod, SQLModel, table=True):
 
 
         async def _recache_account(to_cache: Account):
-            d = await AccountSvc.get_options(to_cache.id, session=session)
-            options = UserOptions(**d)
+            d = await svc.AccountSvc.get_options(to_cache.id, session=session)
+            options = schemas.UserOptions(**d)
             cls.set_cache(to_cache, options=options.model_dump())
 
 
         async def _fetch_account():
-            if account := await AccountSvc.get_by_uid(uid, session=session):
+            if account := await svc.AccountSvc.get_by_uid(uid, session=session):
                 if s.USE_CACHE:
                     await _recache_account(account)
                 account.is_cache = False
@@ -189,21 +191,30 @@ class Account(AccountMod, SQLModel, table=True):
             roles.extend(['superadmin', 'monitor'])
 
         firstname, lastname, display, kwargs = utils.name_extractor(email, **kwargs)
-        account = cls(uid=uid, email=email.lower(), avatar=avatar, roles=roles, display=display,
-                      username=username, is_banned=is_banned, is_verified=False)
+
+        kw = kwargs.copy()
+        meta = dict(provider=[provider])
+        for i in kw.keys():
+            if i not in {*Account.model_fields.keys(), *ProfileMod.model_fields.keys()}:
+                meta[i] = kwargs.pop(i)
+
+        account = cls(
+            uid=uid, email=email.lower(), avatar=avatar, roles=roles, display=display, username=username,
+            is_banned=is_banned, is_verified=False,
+            profile=ProfileMod(firstname=firstname, lastname=lastname, meta=meta, **kwargs),
+            # addresses=[
+            #     AddressMod(),
+            #     AddressMod(),
+            # ],
+            options_rel=[OptionMod(**i, type=2) for i in SEED_USER_OPTIONS]
+        )
         session.add(account)
         await session.commit()
         await session.refresh(account)
 
-        # Profile
-        meta = dict(provider=[provider])
-        profile = ProfileMod(id=account.id, firstname=firstname, lastname=lastname, meta=meta, **kwargs)
-        session.add(profile)
-        await session.commit()
-
         if cache and s.USE_CACHE:
             try:
-                options = UserOptions(**dict(await AccountSvc.get_options(account.id, session=session)))
+                options = schemas.UserOptions(**dict(await svc.AccountSvc.get_options(account.id, session=session)))
                 cls.set_cache(account, options=options.model_dump())
             except Exception as e:
                 logger.error(dict(message=f'Unable to cache {account.uid}', uid=account.uid, extra=str(e)))
@@ -218,7 +229,7 @@ class Account(AccountMod, SQLModel, table=True):
         :return:    AccountCache or None
         """
         try:
-            return AccountCache.get(uid)
+            return schemas.AccountCache.get(uid)
         except NotFoundError:
             return
         except Exception as e:
@@ -227,7 +238,7 @@ class Account(AccountMod, SQLModel, table=True):
 
 
     @staticmethod
-    def set_cache(account: 'Account', *, options: dict) -> 'AccountCache':  # noqa
+    def set_cache(account: 'Account', *, options: dict) -> schemas.AccountCache:  # noqa
         """
         Cache the account replacing it if exists.
         :param account:     The account to cache
@@ -235,9 +246,9 @@ class Account(AccountMod, SQLModel, table=True):
         :return:            None
         """
         try:
-            valid_keys = list(AccountCache.model_fields.keys())
+            valid_keys = list(schemas.AccountCache.model_fields.keys())
             d = {k: v for k, v in account.model_dump().items() if k in valid_keys}
-            cache = AccountCache(**d, options=options)  # noqa
+            cache = schemas.AccountCache(**d, options=options)  # noqa
             cache.pk = account.uid
             cache.save()
             cache.expire(s.ACCOUNT_CACHE_TTL)
@@ -253,7 +264,7 @@ class Account(AccountMod, SQLModel, table=True):
         :param data:    Keys to update
         :return:
         """
-        cache = AccountCache.get(self.uid)
+        cache = schemas.AccountCache.get(self.uid)
         for key, val in data.items():
             setattr(cache, key, val)
         cache.save()
@@ -305,7 +316,7 @@ class Account(AccountMod, SQLModel, table=True):
         elif authorization.uid == to_ban.uid:
             raise ForbiddenException('CANNOT_BAN_YOURSELF')
 
-        if banned_account := await AccountSvc.ban_user(authorization=authorization, to_ban=to_ban, notes=notes,
+        if banned_account := await svc.AccountSvc.ban_user(authorization=authorization, to_ban=to_ban, notes=notes,
                                                        session=session):
             banned_account.update_cache(dict(is_banned=True))
             logger.info(msg=f'Ban account {banned_account.uid} by {authorization.uid}', id=banned_account.uid)
@@ -336,7 +347,7 @@ class Account(AccountMod, SQLModel, table=True):
         elif authorization.uid == to_unban.uid:
             raise ForbiddenException('CANNOT_UNBAN_YOURSELF')
 
-        if account := await AccountSvc.unban_user(authorization=authorization, to_ban=to_unban, session=session):
+        if account := await svc.AccountSvc.unban_user(authorization=authorization, to_ban=to_unban, session=session):
             account.update_cache(dict(is_banned=False))
             logger.info(msg=f'Unban account {account.uid} by {authorization.uid}', id=account.uid)
             return account
