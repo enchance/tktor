@@ -159,8 +159,7 @@ class AccountSvc:
 
 
     @staticmethod
-    async def unban_user(*, authorization: 'Account', to_ban: 'Account',
-                         session: AsyncSession) -> (Account):  # noqa
+    async def unban_user(*, authorization: 'Account', to_ban: 'Account', session: AsyncSession) -> (Account):  # noqa
         """
         Unban an account.
         :param authorization:   Account that does the banning
