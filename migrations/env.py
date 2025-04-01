@@ -28,6 +28,7 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # from models import auth_models
 from auth import Auth
+from trades import Trade
 target_metadata = SQLModel.metadata
 
 
