@@ -71,7 +71,9 @@ class Account(AccountMod, SQLModel, table=True):
         ll = []
         for role in roles:
             try:
-                ll.extend(red.lrange(f'role:{role}', 0, -1))
+                cache = schemas.RoleCache.get(role)
+                ll.extend(cache.permissions)
+                # ll.extend(red.lrange(f'role:{role}', 0, -1))
             except Exception as e:
                 logger.error(dict(message=str(e), id=role))
         ll.extend(self.custom_permissions)  # noqa

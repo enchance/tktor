@@ -8,9 +8,10 @@ from firebase_admin import credentials, initialize_app
 from faker import Faker
 from redis_om import NotFoundError, get_redis_connection
 from fastapi.security import HTTPAuthorizationCredentials
+from sqlmodel import select
 
 from dev.data import SEED_ROLES
-from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt
+from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache
 from core import InvalidToken, ic
 from models.auth_models import ProfileMod
 
@@ -107,11 +108,11 @@ class TestToken:
 
 
 class TestAccount:
-    def setup_class(self):  # noqa
-        creds = credentials.Certificate(os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH'))
-        initialize_app(creds)
-        ic('[Fireabase inititialized]')
-        ic('TEST_STARTED')
+    # def setup_class(self):  # noqa
+    #     creds = credentials.Certificate(os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH'))
+    #     initialize_app(creds)
+    #     ic('[Fireabase inititialized]')
+    #     ic('TEST_STARTED')
 
 
     # def teardown_class(self):  # noqa
@@ -255,15 +256,15 @@ class TestAccount:
 
     # @mark.focus
     def test_collate_permissions(self, account_):
-        redis = get_redis_connection()
-
         ll = []
         for role in account_.roles:
-            ll.extend(redis.lrange(f'role:{role}', 0, -1))
+            cache = RoleCache.get(role)
+            ll.extend(cache.permissions)
+
         assert Counter(account_.permissions) == Counter(Account._reduce_permissions(ll))
 
 
-    @mark.focus
+    # @mark.focus
     async def test_can_roles_permissions(self, generate_accounts, session):
         user, moderator, admin, superadmin = generate_accounts
         user_can_ban = await AccountSvc.get_by_email('user1@mail.com', session=session)
@@ -320,12 +321,14 @@ class TestAccount:
         account = await Account.get(uid=account_.uid, session=session)
         assert account.is_cache
 
-        new_firstname = 'foobar'
-        assert account_.firstname != new_firstname
-        assert account_.update_cache({'firstname': new_firstname})
-
+        new_username = 'foobar'
+        assert account_.username != new_username
         cache = Account.get_cache(account_.uid)
-        assert cache.firstname == new_firstname
+        assert cache.username != new_username
+
+        assert account_.update_cache({'username': new_username})
+        cache = Account.get_cache(account_.uid)
+        assert cache.username == new_username
 
 
     # @mark.focus

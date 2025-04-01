@@ -8,7 +8,7 @@ from faker import Faker
 
 from main import app
 from core import ic  # noqa
-from auth import Auth as authmd
+from auth import Auth as auth_
 from auth import schemas
 
 
@@ -44,12 +44,12 @@ def redis_conn():
 
 
 @pytest.fixture
-async def account_(session) -> authmd.Account:
-    account = await authmd.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                          firstname=fake.first_name(), lastname=fake.last_name(),
-                                          username=fake.user_name(),
-                                          display=fake.word(), gender='male', social=dict(a='b', c=24),
-                                          provider='fake-provider', website=fake.url(), session=session)
+async def account_(session) -> auth_.Account:
+    account = await auth_.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
+                                         firstname=fake.first_name(), lastname=fake.last_name(),
+                                         username=fake.user_name(),
+                                         display=fake.word(), gender='male', social=dict(a='b', c=24),
+                                         provider='fake-provider', website=fake.url(), session=session)
     await session.refresh(account, attribute_names=['profile'])
     yield account
     schemas.AccountCache.delete(account.uid)
@@ -58,15 +58,15 @@ async def account_(session) -> authmd.Account:
 
 
 @pytest.fixture()
-def account_factory() -> Callable[..., Awaitable[authmd.Account]]:
+def account_factory() -> Callable[..., Awaitable[auth_.Account]]:
     async def foo(*, is_moderator: bool = False, is_admin: bool = False, is_superadmin: bool = False,
-                  session: AsyncSession) -> authmd.Account:
-        return await authmd.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                           firstname=fake.first_name(), lastname=fake.last_name(),
-                                           username=fake.user_name(),
-                                           display=fake.word(), gender='male', social=dict(facebook=fake.url()),
-                                           provider='fake-provider', website=fake.url(), is_moderator=is_moderator,
-                                           is_admin=is_admin, is_superadmin=is_superadmin, session=session)
+                  session: AsyncSession) -> auth_.Account:
+        return await auth_.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
+                                          firstname=fake.first_name(), lastname=fake.last_name(),
+                                          username=fake.user_name(),
+                                          display=fake.word(), gender='male', social=dict(facebook=fake.url()),
+                                          provider='fake-provider', website=fake.url(), is_moderator=is_moderator,
+                                          is_admin=is_admin, is_superadmin=is_superadmin, session=session)
 
 
     return foo
@@ -94,14 +94,14 @@ async def generate_accounts(redis_conn, account_factory, session):
 
 
 @pytest.fixture
-async def role_(redis_conn, session) -> authmd.Role:
+async def role_(redis_conn, session) -> auth_.Role:
     actions = ['eat', 'sleep', 'buy', 'write', 'check', 'ban', 'create', 'ignore']
     permissions = {f'{random.choice(actions)}.{fake.word()}' for _ in range(3)}
-    role = authmd.Role(name=fake.word(), permissions=permissions)
+    role = auth_.Role(name=fake.word(), permissions=permissions)
 
     session.add(role)
     await session.commit()
-    authmd.Role.set_cache(role.name, role.permissions)
+    auth_.Role.set_cache(role.name, role.permissions)
     yield role
     redis_conn.delete(f'role:{role.name}')
     await session.delete(role)
