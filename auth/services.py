@@ -9,6 +9,8 @@ from auth import Auth as auth_
 from models.auth_models import BanMod
 from models.common_models import OptionMod
 
+if TYPE_CHECKING:
+    from auth import Account, Role
 
 
 class RoleSvc:

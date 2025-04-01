@@ -6,7 +6,7 @@ from redis_om import NotFoundError
 
 from core import NotFoundException, AppException, InvalidToken, SessionDep, ic
 from core.config import get_session_context
-from auth import Auth as authmd
+from auth import Auth as auth_
 
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -48,7 +48,7 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Security(security
         raise InvalidToken('INVALID_TOKEN')
 
 
-async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> authmd.Account:
+async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> auth_.Account:
     """
     Get the user associated with the token.
     """
@@ -56,11 +56,11 @@ async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> 
 
     async with get_session_context() as session:
         try:
-            account = await authmd.Account.get(uid, session=session)
+            account = await auth_.Account.get(uid, session=session)
             return account
         except NotFoundError as e:
             try:
-                return await authmd.Account.get(uid, session=session)
+                return await auth_.Account.get(uid, session=session)
             except Exception:
                 raise NotFoundException('ACCOUNT_NOT_FOUND')
         except:

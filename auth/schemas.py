@@ -5,7 +5,7 @@ from redis_om import JsonModel, Field
 
 from core import ic, logger
 from core.config import settings as s
-from auth import Auth as authmd
+from auth import Auth as auth_
 
 
 # from core.schemas import SystemOptionsSchema
@@ -27,15 +27,11 @@ class BaseAccount(BaseModel):
 
 
 class AccountCreate(BaseModel):
-    # TODO: Commented items are removed in migration
     uid: str
     email: str
     email_verified: bool
-    # sign_in_provider: str
     picture: str
     send_verification: bool = PydanticField(default=True)
-    # firstname: str = PydanticField(default='')
-    # lastname: str = PydanticField(default='')
 
 
 class AccountCache(BaseAccount, JsonModel):
@@ -69,7 +65,7 @@ class AccountCache(BaseAccount, JsonModel):
             # else:
             #     d['banned_at'] = datetime.fromisoformat(d['banned_at'])
 
-            account = authmd.Account(**d, banned_by_id=None)  # noqa
+            account = auth_.Account(**d, banned_by_id=None)  # noqa
             account.is_cache = True
             return account
         except Exception as e:
