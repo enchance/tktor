@@ -5,7 +5,7 @@ from models.trade_models import TradeLogMod, WalletMod
 
 
 if TYPE_CHECKING:
-    from auth import Account
+    from authentication import Account
 
 
 class TradeLog(TradeLogMod, SQLModel, table=True):

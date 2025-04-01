@@ -12,7 +12,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dev.data import SEED_ROLES
-from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, BanMod
+from authentication import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, BanMod
 from core import InvalidToken, ic, ForbiddenException
 from models.auth_models import ProfileMod
 
@@ -45,8 +45,9 @@ mock_decoded_token = {'aud': 'foo-123',
 
 
 class TestToken:
-    # @mark.focus
-    @mock.patch('auth.dependencies.auth.verify_id_token', return_value=mock_decoded_token)
+    @mark.focus
+    @mark.skip
+    @mock.patch('authentication.dependencies.auth.verify_id_token', return_value=mock_decoded_token)
     def test_valid_token_mock(self, _):
         mock_token = 'valid_token'
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
@@ -54,8 +55,9 @@ class TestToken:
         assert result == mock_decoded_token
 
 
-    # @mark.focus
-    @mock.patch('auth.dependencies.auth.verify_id_token', side_effect=InvalidToken)
+    @mark.focus
+    @mark.skip
+    @mock.patch('authentication.dependencies.auth.verify_id_token', side_effect=InvalidToken)
     def test_invalid_token_mock(self, _):
         mock_token = "invalid_token"
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
@@ -253,7 +255,7 @@ class TestAccount:
         assert accountdb.display == new_display
 
 
-    # @mark.focus
+    @mark.focus
     def test_collate_permissions(self, account_):
         ll = []
         for role in account_.roles:

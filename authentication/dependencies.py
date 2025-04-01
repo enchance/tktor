@@ -1,12 +1,12 @@
 from typing import Annotated, TYPE_CHECKING
-from firebase_admin import auth
+from firebase_admin import auth as fbauth
 from fastapi import Depends, Security
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
 from redis_om import NotFoundError
 
 from core import NotFoundException, AppException, InvalidToken, SessionDep, ic
 from core.config import get_session_context
-from auth import Auth as auth_
+from authentication import Auth as auth
 
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -29,7 +29,7 @@ def is_valid_token(credentials: HTTPAuthorizationCredentials = Security(security
     """
     token = credentials.credentials
     try:
-        if _ := auth.verify_id_token(token):
+        if _ := fbauth.verify_id_token(token):
             return True
         raise InvalidToken()
     except Exception:
@@ -42,13 +42,13 @@ def validate_token(credentials: HTTPAuthorizationCredentials = Security(security
     """
     token = credentials.credentials
     try:
-        decoded_token = auth.verify_id_token(token)
+        decoded_token = fbauth.verify_id_token(token)
         return decoded_token
     except Exception:
         raise InvalidToken('INVALID_TOKEN')
 
 
-async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> auth_.Account:
+async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> auth.Account:
     """
     Get the user associated with the token.
     """
@@ -56,11 +56,11 @@ async def current_user(token_data: Annotated[dict, Depends(validate_token)]) -> 
 
     async with get_session_context() as session:
         try:
-            account = await auth_.Account.get(uid, session=session)
+            account = await auth.Account.get(uid, session=session)
             return account
         except NotFoundError as e:
             try:
-                return await auth_.Account.get(uid, session=session)
+                return await auth.Account.get(uid, session=session)
             except Exception:
                 raise NotFoundException('ACCOUNT_NOT_FOUND')
         except:

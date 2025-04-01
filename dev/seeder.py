@@ -7,7 +7,7 @@ from redis_om import get_redis_connection
 
 from core import ic, SessionDep, Envs
 from core.config import settings as s
-from auth import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
+from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
 from models import auth_models as authmod
 from models.common_models import OptionMod
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS    # noqa

@@ -8,8 +8,8 @@ from faker import Faker
 
 from main import app
 from core import ic  # noqa
-from auth import Auth as auth_
-from auth import schemas
+from authentication import Auth as auth_
+from authentication import schemas
 
 
 fake = Faker()

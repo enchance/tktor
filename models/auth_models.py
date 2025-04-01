@@ -9,7 +9,7 @@ from .common_models import IntPkMixin, DTMixin, MetaMixin, UpdatedAtMixin
 
 
 if TYPE_CHECKING:
-    from auth import Account
+    from authentication import Account
 
 
 class BanMod(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):

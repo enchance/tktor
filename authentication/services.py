@@ -4,13 +4,13 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from core import NotFoundException, logger, ic
 from core.config import settings as s
-from auth import Auth as auth_
+from authentication import Auth as auth_
 # from .Auth import Account, Role, BanMod
 from models.auth_models import BanMod
 from models.common_models import OptionMod
 
 if TYPE_CHECKING:
-    from auth import Account, Role
+    from authentication import Account, Role
 
 
 class RoleSvc:

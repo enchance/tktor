@@ -5,7 +5,7 @@ from redis_om import JsonModel, Field
 
 from core import ic, logger
 from core.config import settings as s
-from auth import Auth as auth_
+from authentication import Auth as auth_
 
 
 # from core.schemas import SystemOptionsSchema

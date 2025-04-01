@@ -14,8 +14,7 @@ from sqlalchemy.orm import selectinload
 
 from core import ic
 from core.config import settings as s
-# from auth import account as authacct
-from auth import Account
+from authentication import Account
 from core import SessionDep
 from models.auth_models import ProfileMod, AddressMod
 from models.common_models import OptionMod

@@ -8,7 +8,7 @@ from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod, RoleM
 from models.common_models import OptionMod
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
-from auth import enums, schemas, services as svc
+from authentication import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS
 from trades import TradeLog, Wallet
 
