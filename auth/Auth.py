@@ -10,7 +10,7 @@ from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc,
 from core.config import settings as s
 from auth import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS
-from trades import TradeLog
+from trades import TradeLog, Wallet
 
 
 if TYPE_CHECKING:
@@ -22,8 +22,9 @@ class Account(AccountMod, SQLModel, table=True):
     profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
                                          cascade_delete=True)
     options_rel: list['OptionMod'] = Relationship(back_populates='owner', cascade_delete=True)
-    addresses: list['AddressMod'] = Relationship(back_populates='account')
-    trades: list['TradeLog'] = Relationship(back_populates='account')
+    addresses: list['AddressMod'] = Relationship(back_populates='account', cascade_delete=True)
+    trades: list['TradeLog'] = Relationship(back_populates='account', cascade_delete=True)
+    wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
     bans: list['BanMod'] = Relationship(
         back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'}, cascade_delete=True)
     ban_owners: list['BanMod'] = Relationship(
