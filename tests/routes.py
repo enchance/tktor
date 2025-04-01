@@ -1,9 +1,8 @@
 from typing import Annotated, TYPE_CHECKING
 from fastapi import APIRouter, Depends
 
+from auth import Account, validate_token, current_user
 
-if TYPE_CHECKING:
-    from auth import Account, validate_token, current_user
 
 testrouter = APIRouter()
 

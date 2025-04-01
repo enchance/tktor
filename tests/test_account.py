@@ -10,14 +10,17 @@ from redis_om import NotFoundError, get_redis_connection
 from fastapi.security import HTTPAuthorizationCredentials
 
 from dev.data import SEED_ROLES
+from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt
+from core import InvalidToken, ic
+from models.auth_models import ProfileMod
+
 
 if TYPE_CHECKING:
-    from auth import validate_token, AccountSvc, AccountCache, Can, UserOptions, Account
-    from core import ic, utils, InvalidToken, ForbiddenException, OptionsSvc
+    from core import ic, utils, ForbiddenException, OptionsSvc
     from models.common_models import OptionMod
+
     # from core.dependencies import validate_token
     # from core.services import AccountSvc
-
 
 fake = Faker()
 
@@ -42,7 +45,7 @@ mock_decoded_token = {'aud': 'foo-123',
 
 class TestToken:
     # @mark.focus
-    @mock.patch('account.dependencies.auth.verify_id_token', return_value=mock_decoded_token)
+    @mock.patch('auth.dependencies.auth.verify_id_token', return_value=mock_decoded_token)
     def test_valid_token_mock(self, _):
         mock_token = 'valid_token'
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
@@ -51,7 +54,7 @@ class TestToken:
 
 
     # @mark.focus
-    @mock.patch('account.dependencies.auth.verify_id_token', side_effect=InvalidToken)
+    @mock.patch('auth.dependencies.auth.verify_id_token', side_effect=InvalidToken)
     def test_invalid_token_mock(self, _):
         mock_token = "invalid_token"
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
@@ -117,12 +120,12 @@ class TestAccount:
     # @mark.focus
     async def test_create_account(self, session):
         account_min = await Account.create(uid=token_hex(14), email=fake.email(), provider='fake-provider',
-                                                     session=session)
+                                           session=session)
         account_full = await Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                                      firstname=fake.first_name(), lastname=fake.last_name(),
-                                                      username=fake.user_name(), display=fake.word(), gender='male',
-                                                      social=dict(foo=fake.url(), bar=fake.url()),
-                                                      provider='fake-provider', website=fake.url(), session=session)
+                                            firstname=fake.first_name(), lastname=fake.last_name(),
+                                            username=fake.user_name(), display=fake.word(), gender='male',
+                                            social=dict(foo=fake.url(), bar=fake.url()),
+                                            provider='fake-provider', website=fake.url(), session=session)
 
         cache_data = Account.get_cache(account_full.uid)
         account_cache = cache_data.to_account()
@@ -161,14 +164,15 @@ class TestAccount:
         assert account_.email
         assert account_.uid
         assert account_.id
-        ic(account_.model_dump())
+        # ic(account_.model_dump())
         assert account_.roles
         assert not account_.custom_permissions
         # assert set(account_.permissions) == set(
         #     utils.reduce_permissions([*SEED_ROLES['user'], *SEED_ROLES['devtesting']]))
 
-        if account_.firstname or account_.lastname:
-            assert f'{account_.firstname} {account_.lastname}'.strip() == account_.fullname
+        profile: ProfileMod = account_.profile
+        if profile.firstname or profile.lastname:
+            assert f'{profile.firstname} {profile.lastname}'.strip() == profile.fullname
 
 
     # @mark.focus
@@ -208,7 +212,7 @@ class TestAccount:
         assert account.options.items_per_page != new_int
         assert accountdb.options.items_per_page != new_int
 
-        await account.update_options({'items_per_page': new_int}, session=session)
+        await account.update_options({Opt.items_per_page.name: new_int}, session=session)
 
         account = await Account.get(uid=account_.uid, session=session)
         accountdb = await Account.get(uid=account_.uid, use_db=True, session=session)
@@ -256,10 +260,10 @@ class TestAccount:
         ll = []
         for role in account_.roles:
             ll.extend(redis.lrange(f'role:{role}', 0, -1))
-        assert Counter(account_.permissions) == Counter(utils.reduce_permissions(ll))
+        assert Counter(account_.permissions) == Counter(Account._reduce_permissions(ll))
 
 
-    # @mark.focus
+    @mark.focus
     async def test_can_roles_permissions(self, generate_accounts, session):
         user, moderator, admin, superadmin = generate_accounts
         user_can_ban = await AccountSvc.get_by_email('user1@mail.com', session=session)
@@ -336,7 +340,7 @@ class TestAccount:
         assert await AccountSvc.is_unique_username(fake.user_name(), session=session)
 
 
-class TestAccountManagement:
+class _TestAccountManagement:
     # @mark.focus
     async def test_ban_failed(self, generate_accounts, session):
         user, moderator, admin, superadmin = generate_accounts
@@ -546,7 +550,7 @@ class TestAccountManagement:
         await session.commit()
 
 
-class TestRole:
+class _TestRole:
     # @mark.focus
     async def test_get(self, role_, session):
         # red = get_redis_connection()

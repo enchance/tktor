@@ -3,6 +3,7 @@ from faker import Faker
 from pydantic import BaseModel
 
 from core import CommentStatus, ic
+# from auth import Opt
 
 fake = Faker()
 
@@ -75,36 +76,22 @@ SEED_USER_OPTIONS = [
     {'name':'max_upload_mb', 'value':'5', 'description':''},
 ]
 
-# SEED_OPTIONS = {
-#     'system': OptionsSchema(
-#         site_name='Bulma',
-#         site_description='Add description here',
-#         site_icon='',
-#         site_url='localhost:8000',
-#         admin_email='admin1@mail.com',
-#         date_format='%b %d, %Y',
-#         time_format='%I:%M%p',
-#         timezone='UTC',
-#         home_path='/home',
-#         users_can_register=True,
-#         default_role={'account', 'upload'},
-#         items_per_page=10,
-#         comment_status=CommentStatus.pending,
-#         comment_publish_delay=120,
-#         comment_anonymous=False,
-#         comment_threads=False,
-#         comment_depth=2,
-#         comments_per_page=10,
-#         comment_order='desc',
-#         comments_blacklist=set(),
-#         show_avatars=True,
-#         avatar_default_url='',
-#         max_upload_mb=5,
-#     ),
-#     'user': {
-#         'notifications': 'True',
-#     }
-# }
+SEED_SYSTEM_OPTIONS = [
+    {'name':'site_name', 'value': 'Tktor', 'type': 1},
+    {'name':'site_description', 'value': 'Add description here', 'type': 1},
+    {'name':'site_icon', 'value': '', 'type': 1},
+    {'name':'site_url', 'value': 'localhost:8000', 'type': 1},
+    {'name':'admin_email', 'value': 'admin1@mail.com', 'type': 1},
+    {'name':'home_path', 'value': '/home', 'type': 1},
+    {'name':'users_can_register', 'value': True, 'type': 1},
+    {'name':'comment_status', 'value': 'pending', 'type': 1},
+    {'name':'comment_anonymous', 'value': False, 'type': 1},
+    {'name':'comment_threads', 'value': False, 'type': 1},
+    {'name':'comment_depth', 'value': 2, 'type': 1},
+    {'name':'show_avatars', 'value': True, 'type': 1},
+    {'name':'avatar_default_url', 'value': '', 'type': 1},
+]
+
 
 # SEED_TAXONOMY = {
 #     'system': [],

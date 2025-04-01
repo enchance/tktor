@@ -43,11 +43,6 @@ def redis_conn():
     return get_redis_connection()
 
 
-@pytest.fixture(scope='session')
-def valid_token():
-    return os.getenv('DEV_TOKEN_VALID')
-
-
 @pytest.fixture
 async def account_(session) -> authmd.Account:
     account = await authmd.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
@@ -55,6 +50,7 @@ async def account_(session) -> authmd.Account:
                                           username=fake.user_name(),
                                           display=fake.word(), gender='male', social=dict(a='b', c=24),
                                           provider='fake-provider', website=fake.url(), session=session)
+    await session.refresh(account, attribute_names=['profile'])
     yield account
     schemas.AccountCache.delete(account.uid)
     await session.delete(account)
@@ -71,6 +67,8 @@ def account_factory() -> Callable[..., Awaitable[authmd.Account]]:
                                            display=fake.word(), gender='male', social=dict(facebook=fake.url()),
                                            provider='fake-provider', website=fake.url(), is_moderator=is_moderator,
                                            is_admin=is_admin, is_superadmin=is_superadmin, session=session)
+
+
     return foo
 
 
@@ -108,6 +106,11 @@ async def role_(redis_conn, session) -> authmd.Role:
     redis_conn.delete(f'role:{role.name}')
     await session.delete(role)
     await session.commit()
+
+
+@pytest.fixture(scope='session')
+def valid_token():
+    return os.getenv('DEV_TOKEN_VALID')
 
 
 @pytest.fixture(scope='session')

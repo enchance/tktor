@@ -103,7 +103,7 @@ class Account(AccountMod, SQLModel, table=True):
     def options(self) -> Union['UserOptions', None]:  # noqa
         """Generate the options for the account."""
         try:
-            options_cache = AccountCache.get(self.uid).options  # noqa
+            options_cache = schemas.AccountCache.get(self.uid).options  # noqa
             return schemas.UserOptions(**options_cache)
         except NotFoundError:
             # TODO: Recache account with Celery

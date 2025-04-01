@@ -12,10 +12,10 @@ alembic downgrade base \
     && alembic upgrade head \
     && echo '[Migrations complete]'
 
-# Postgres
-echo "[Starting seeding...]"
-docker exec -t $PG_CONTAINER psql -U vegeta -d vegeta -f /tmp/$SEEDERS_FILE \
-    && echo "[Seeding complete]"
+## Postgres
+#echo "[Starting seeding...]"
+#docker exec -t $PG_CONTAINER psql -U vegeta -d vegeta -f /tmp/$SEEDERS_FILE \
+#    && echo "[Seeding complete]"
 
 # Redis
 echo "[Flushing redis...]"

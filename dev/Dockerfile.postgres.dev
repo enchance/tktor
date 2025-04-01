@@ -14,8 +14,8 @@ COPY dev/bashrc .
 #COPY sql/01-init.sql .
 #COPY dev/sql/02-tables.sql .
 
-WORKDIR /tmp
-COPY dev/sql/seeder.sql .
+#WORKDIR /tmp
+#COPY dev/sql/seeder.sql .
 ## Run after migrations
 #COPY dev/sql/03-triggers.sql .
 #COPY dev/sql/04-seeder.sql .

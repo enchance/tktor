@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 
 from core import NotFoundException, logger, ic
 from core.config import settings as s
-from auth import Auth as authmd
+from auth import Auth as auth_
 # from .Auth import Account, Role, BanMod
 from models.auth_models import BanMod
 from models.common_models import OptionMod
@@ -21,7 +21,7 @@ class RoleSvc:
         :param session:     AsyncSession
         :return:            Role
         """
-        return await session.get(authmd.Role, name)
+        return await session.get(auth_.Role, name)
 
 
 class AccountSvc:
@@ -35,7 +35,7 @@ class AccountSvc:
         :raises:        NotFoundException
         """
         try:
-            stmt = select(authmd.Account).where(authmd.Account.uid == uid)
+            stmt = select(auth_.Account).where(auth_.Account.uid == uid)
             exec_ = await session.exec(stmt)
             if account := exec_.one_or_none():
                 return account
@@ -55,7 +55,7 @@ class AccountSvc:
         :raises:        NotFoundException
         """
         try:
-            stmt = select(authmd.Account).where(authmd.Account.email == email)
+            stmt = select(auth_.Account).where(auth_.Account.email == email)
             exec_ = await session.exec(stmt)  # type: ignore
             if account := exec_.one_or_none():
                 return account
@@ -91,7 +91,7 @@ class AccountSvc:
         """
         if not to_save:
             return False
-        stmt = update(Account).where(Account.uid == uid).values(**to_save)  # noqa
+        stmt = update(auth_.Account).where(auth_.Account.uid == uid).values(**to_save)  # noqa
         await session.exec(stmt)
         await session.commit()
         return True
@@ -105,7 +105,7 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:            bool
         """
-        stmt = select(authmd.Account.uid).where(authmd.Account.email == email)
+        stmt = select(auth_.Account.uid).where(auth_.Account.email == email)
         exec_ = await session.exec(stmt)
         if _ := exec_.one_or_none():
             logger.warn(dict(message=f"Account {email} not found", id=email))
@@ -122,7 +122,7 @@ class AccountSvc:
         :return:            bool
         """
         try:
-            stmt = select(authmd.Account.uid).where(authmd.Account.username == username)
+            stmt = select(auth_.Account.uid).where(auth_.Account.username == username)
             exec_ = await session.exec(stmt)
             if _ := exec_.one_or_none():
                 logger.warn(dict(message=f"Account {username} not found", id=username))
@@ -150,7 +150,7 @@ class AccountSvc:
             ban = BanMod(recipient_id=to_ban.id, owner_id=authorization.id, notes=notes)
             session.add(ban)
 
-            stmt = update(Account).where(Account.id == to_ban.id).values(is_banned=True)  # noqa
+            stmt = update(auth_.Account).where(auth_.Account.id == to_ban.id).values(is_banned=True)  # noqa
             await session.exec(stmt)
             await session.commit()
 
@@ -178,7 +178,7 @@ class AccountSvc:
                     .values(is_active=False))  # noqa
             await session.exec(stmt)  # noqa
 
-            stmt = update(Account).where(Account.id == to_ban.id).values(is_banned=False)  # noqa
+            stmt = update(auth_.Account).where(auth_.Account.id == to_ban.id).values(is_banned=False)  # noqa
             await session.exec(stmt)
             await session.commit()
 

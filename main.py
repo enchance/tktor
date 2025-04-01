@@ -20,8 +20,9 @@ from core import SessionDep
 from models.auth_models import ProfileMod, AddressMod
 from models.common_models import OptionMod
 # from routes import accountrouter, authrouter
-# from dev.seeder import devrouter
-# from tests.routes import testrouter
+from dev.seeder import devrouter
+from tests.routes import testrouter
+
 
 # TODO: Review the test to ban/unban as the fields have changed
 
@@ -72,9 +73,9 @@ def get_app(data: dict) -> FastAPI:
     # app_.include_router(accountrouter, prefix='/account', tags=['account'])
     # app_.include_router(authrouter, prefix='/auth', tags=['auth'])
 
-    # if s.DEBUG:
-    #     app_.include_router(devrouter, prefix='/dev', tags=['dev'])
-    #     app_.include_router(testrouter, prefix='/test', tags=['dev', 'test'])
+    if s.DEBUG:
+        app_.include_router(devrouter, prefix='/dev', tags=['dev'])
+        app_.include_router(testrouter, prefix='/test', tags=['dev', 'test'])
 
     app_.state = State(state=data)
     app_.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # noqa
@@ -118,9 +119,9 @@ async def foo(request: Request, session: SessionDep):
     await session.refresh(account)
     ic(type(account), account)
 
-    stmt = select(Account).where(Account.email == 'aaa@aaa.com')\
-            .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses),
-                     selectinload(Account.options_rel))
+    stmt = select(Account).where(Account.email == 'aaa@aaa.com') \
+        .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses),
+                 selectinload(Account.options_rel))
     exec_ = await session.exec(stmt)
     account = exec_.one_or_none()
 

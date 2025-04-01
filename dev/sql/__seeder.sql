@@ -14,8 +14,8 @@ VALUES ('monitor'),
 -- Option
 -- Update alongside: dev.seeder.seed (caching)
 INSERT INTO app_option (name, value, type)
-VALUES ('site_name', 'Bulma', 1),
-       ('site_description', 'Add description here', 1),
+VALUES ('site_name', 'Tktor', 1),
+       ('site_description', 'Track your PNL just because', 1),
        ('site_icon', '', 1),
        ('site_url', 'localhost:8000', 1),
        ('admin_email', 'admin1@mail.com', 1),

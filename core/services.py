@@ -1,7 +1,7 @@
 from sqlmodel import update, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-# from models.common_models import Option
+from models.common_models import OptionMod
 
 
 class OptionsSvc:
@@ -16,7 +16,7 @@ class OptionsSvc:
         :return:            List of updated options
         """
         # stmt = select(Option).where(Option.owner_id == id_, Option.name.in_(to_save.keys()))  # noqa
-        stmt = select(Option).where(Option.owner_id == id_, Option.name.in_(to_save.keys()))  # noqa
+        stmt = select(OptionMod).where(OptionMod.owner_id == id_, OptionMod.name.in_(to_save.keys()))  # noqa
         exec_ = await session.exec(stmt)  # noqa
         rows = exec_.all()
 
