@@ -30,10 +30,3 @@ class WalletMod(DTMixin, IntPkMixin, ABC):
     balance: str = Field(max_length=199)
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
     owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-
-
-class SymbolMod(DTMixin, IntPkMixin, SQLModel, table=True):
-    __tablename__ = 'trade_symbol'
-    symbol: str = Field(max_length=20, unique=True)
-    name: str = Field(max_length=20, unique=True)
-    description: str = Field(sa_column=Column(TEXT, default='', server_default=''))
