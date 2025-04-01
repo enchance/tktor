@@ -1,5 +1,5 @@
 import os, random, httpx, pytest
-from typing import Callable, Awaitable, TYPE_CHECKING
+from typing import Callable, Awaitable
 from secrets import token_hex
 from redis_om import get_redis_connection
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -11,9 +11,6 @@ from core import ic  # noqa
 from auth import Auth as auth_
 from auth import schemas
 
-
-# if TYPE_CHECKING:
-#     from auth import AccountCache
 
 fake = Faker()
 
@@ -97,7 +94,7 @@ async def generate_accounts(redis_conn, account_factory, session):
 async def role_(redis_conn, session) -> auth_.Role:
     actions = ['eat', 'sleep', 'buy', 'write', 'check', 'ban', 'create', 'ignore']
     permissions = {f'{random.choice(actions)}.{fake.word()}' for _ in range(3)}
-    role = auth_.Role(name=fake.word(), permissions=permissions)
+    role = auth_.Role(name=fake.word(), permissions=permissions)  # noqa
 
     session.add(role)
     await session.commit()

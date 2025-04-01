@@ -9,15 +9,15 @@ from faker import Faker
 from redis_om import NotFoundError, get_redis_connection
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dev.data import SEED_ROLES
-from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache
-from core import InvalidToken, ic
+from auth import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, BanMod
+from core import InvalidToken, ic, ForbiddenException
 from models.auth_models import ProfileMod
 
 
 if TYPE_CHECKING:
-    from core import ic, utils, ForbiddenException, OptionsSvc
     from models.common_models import OptionMod
 
     # from core.dependencies import validate_token
@@ -113,7 +113,6 @@ class TestAccount:
     #     initialize_app(creds)
     #     ic('[Fireabase inititialized]')
     #     ic('TEST_STARTED')
-
 
     # def teardown_class(self):  # noqa
     #     ic('TEST_ENDED')
@@ -343,7 +342,14 @@ class TestAccount:
         assert await AccountSvc.is_unique_username(fake.user_name(), session=session)
 
 
-class _TestAccountManagement:
+class TestAccountManagement:
+    @staticmethod
+    async def _fetch_ban(id_: int, sess: AsyncSession):
+        stmt = select(BanMod).where(BanMod.recipient_id == id_, BanMod.is_active == True)
+        exec_ = await sess.exec(stmt)  # noqa
+        return exec_.one_or_none()
+
+
     # @mark.focus
     async def test_ban_failed(self, generate_accounts, session):
         user, moderator, admin, superadmin = generate_accounts
@@ -399,39 +405,45 @@ class _TestAccountManagement:
 
         # Moderator
         assert not user1.is_banned
-        await Account.ban(authorization=moderator, to_ban=user1, session=session)
+        user1 = await Account.ban(authorization=moderator, to_ban=user1, session=session)
         assert user1.is_banned
-        assert user1.banned_by == moderator
+        ban = await self._fetch_ban(user1.id, session)
+        assert ban
+        assert ban.owner_id == moderator.id
         account = await Account.get(user1.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(user1.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(user1.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
         # Admin
         assert not user2.is_banned
-        await Account.ban(authorization=admin, to_ban=user2, session=session)
+        user2 = await Account.ban(authorization=admin, to_ban=user2, session=session)
         assert user2.is_banned
-        assert user2.banned_by == admin
+        ban = await self._fetch_ban(user2.id, session)
+        assert ban
+        assert ban.owner_id == admin.id
         account = await Account.get(user2.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(user2.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(user2.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
-        # Superadmin
+        # Admin
         assert not user3.is_banned
-        await Account.ban(authorization=superadmin, to_ban=user3, session=session)
+        user3 = await Account.ban(authorization=superadmin, to_ban=user3, session=session)
         assert user3.is_banned
-        assert user3.banned_by == superadmin
+        ban = await self._fetch_ban(user3.id, session)
+        assert ban
+        assert ban.owner_id == superadmin.id
         account = await Account.get(user3.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(user3.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(user3.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
         # Cleanup
         await session.delete(user1)
@@ -452,27 +464,31 @@ class _TestAccountManagement:
 
         # Admin
         assert not moderator1.is_banned
-        await Account.ban(authorization=admin, to_ban=moderator1, session=session)
+        moderator1 = await Account.ban(authorization=admin, to_ban=moderator1, session=session)
         assert moderator1.is_banned
-        assert moderator1.banned_by == admin
+        ban = await self._fetch_ban(moderator1.id, session)
+        assert ban
+        assert ban.owner_id == admin.id
         account = await Account.get(moderator1.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(moderator1.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(moderator1.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
         # Superadmin
         assert not moderator2.is_banned
-        await Account.ban(authorization=superadmin, to_ban=moderator2, session=session)
+        moderator2 = await Account.ban(authorization=superadmin, to_ban=moderator2, session=session)
         assert moderator2.is_banned
-        assert moderator2.banned_by == superadmin
+        ban = await self._fetch_ban(moderator2.id, session)
+        assert ban
+        assert ban.owner_id == superadmin.id
         account = await Account.get(moderator2.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(moderator2.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(moderator2.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
         # Cleanup
         await session.delete(moderator1)
@@ -489,15 +505,17 @@ class _TestAccountManagement:
 
         # Superadmin
         assert not admin.is_banned
-        await Account.ban(authorization=superadmin, to_ban=admin, session=session)
+        admin = await Account.ban(authorization=superadmin, to_ban=admin, session=session)
         assert admin.is_banned
-        assert admin.banned_by == superadmin
+        ban = await self._fetch_ban(admin.id, session)
+        assert ban
+        assert ban.owner_id == superadmin.id
         account = await Account.get(admin.uid, session=session)
         assert account.is_cache
         assert account.is_banned
-        # account = await Account.get(admin.uid, use_db=True, session=session)
-        # assert not account.is_cache
-        # assert account.is_banned
+        account = await Account.get(admin.uid, use_db=True, session=session)
+        assert not account.is_cache
+        assert account.is_banned
 
         # Cleanup
         await session.delete(admin)
@@ -517,28 +535,17 @@ class _TestAccountManagement:
         assert not user1.is_banned
         assert not user2.is_banned
         assert not user3.is_banned
-        account = await Account.ban(authorization=admin, to_ban=user1, session=session)
-        assert account.banned_at is not None
-        assert account.banned_by_id is not None
-        account = await Account.ban(authorization=admin, to_ban=user2, session=session)
-        assert account.banned_at is not None
-        assert account.banned_by_id is not None
-        account = await Account.ban(authorization=admin, to_ban=user3, session=session)
-        assert account.banned_at is not None
-        assert account.banned_by_id is not None
+
+        user1 = await Account.ban(authorization=admin, to_ban=user1, session=session)
+        user2 = await Account.ban(authorization=admin, to_ban=user2, session=session)
+        user3 = await Account.ban(authorization=admin, to_ban=user3, session=session)
         assert user1.is_banned
         assert user2.is_banned
         assert user3.is_banned
 
-        account = await Account.unban(authorization=moderator, to_unban=user1, session=session)
-        assert account.banned_at is None
-        assert account.banned_by_id is None
-        account = await Account.unban(authorization=admin, to_unban=user2, session=session)
-        assert account.banned_at is None
-        assert account.banned_by_id is None
-        account = await Account.unban(authorization=superadmin, to_unban=user3, session=session)
-        assert account.banned_at is None
-        assert account.banned_by_id is None
+        user1 = await Account.unban(authorization=moderator, to_unban=user1, session=session)
+        user2 = await Account.unban(authorization=admin, to_unban=user2, session=session)
+        user3 = await Account.unban(authorization=superadmin, to_unban=user3, session=session)
         assert not user1.is_banned
         assert not user2.is_banned
         assert not user3.is_banned
@@ -551,20 +558,3 @@ class _TestAccountManagement:
         await session.delete(admin)
         await session.delete(superadmin)
         await session.commit()
-
-
-class _TestRole:
-    # @mark.focus
-    async def test_get(self, role_, session):
-        # red = get_redis_connection()
-        # assert set(await models.Role.get(role_.name, session=session)) == role_.permissions
-        #
-        # cache_key = f'role:{role_.name}'
-        # assert red.exists(cache_key)
-        # red.delete(cache_key)
-        # assert not red.exists(cache_key)
-        #
-        # assert set(await models.Role.get(role_.name, session=session)) == role_.permissions  # No cache
-        # assert red.exists(cache_key)
-        # assert set(await models.Role.get(role_.name, session=session)) == role_.permissions  # With cache
-        pass

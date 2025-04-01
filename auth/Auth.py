@@ -293,7 +293,7 @@ class Account(AccountMod, SQLModel, table=True):
         return action in self.permissions
 
     @staticmethod
-    async def ban(*, authorization: 'Account', to_ban: 'Account', notes: str, session: AsyncSession) -> Union[
+    async def ban(*, authorization: 'Account', to_ban: 'Account', session: AsyncSession, notes: str = '') -> Union[
         'Account',
     None]:
         """
