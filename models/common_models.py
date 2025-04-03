@@ -68,17 +68,17 @@ class Taxonomy(TaxonomyMod, SQLModel, table=True):
         return f'<Taxonomy {self.id}: {self.name}>'
 
 
-class OptionMod(IntPkMixin, DTMixin, SQLModel, table=True):
+class Option(IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'app_option'
-    __table_args__ = (UniqueConstraint('name', 'owner_id'),)
+    __table_args__ = (UniqueConstraint('name', 'account_id'),)
     name: str = Field(max_length=50)
     value: str = Field(sa_column=Column(TEXT, default='', server_default=''))
     type: int | None = Field(default=2, sa_column=Column(Integer, server_default='2'))
     description: str | None = Field(sa_column=Column(TEXT, default='', server_default=''))
-    owner_id: int | None = Field(foreign_key='auth_account.id', default=None, ondelete='CASCADE',
-                                 sa_column_kwargs={'server_default': text('NULL')})
+    account_id: int | None = Field(foreign_key='auth_account.id', default=None, ondelete='CASCADE',
+                                   sa_column_kwargs={'server_default': text('NULL')})
     # --
-    owner: 'Account' = Relationship(back_populates='options_rel')  # noqa
+    account: 'Account' = Relationship(back_populates='options_rel')  # noqa
 
 
     def __repr__(self) -> str:

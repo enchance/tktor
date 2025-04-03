@@ -9,7 +9,7 @@ from core import ic, SessionDep, Envs
 from core.config import settings as s
 from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
 from models import auth_models as authmod
-from models.common_models import OptionMod
+from models.common_models import Option
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS    # noqa
 
 
@@ -51,6 +51,7 @@ class AppSeeder:
     @classmethod
     async def generate_accounts(cls, session: AsyncSession) -> int:
         super_count = await cls._account_creator(SEED_ACCOUNTS['superadmin'], is_superadmin=True, session=session)
+        ic(super_count)
         admin_count = await cls._account_creator(SEED_ACCOUNTS['admin'], is_admin=True, session=session)
         moderator_count = await cls._account_creator(SEED_ACCOUNTS['moderator'], is_moderator=True, session=session)
         user_count = await cls._account_creator(SEED_ACCOUNTS['user'], session=session)
@@ -111,7 +112,7 @@ class AppSeeder:
     async def generate_system_options(session: AsyncSession):
         count = 0
 
-        stmt = select(OptionMod.name).where(OptionMod.type == 1)
+        stmt = select(Option.name).where(Option.type == 1)
         exec_ = await session.exec(stmt)  # noqa
         currentlist = exec_.all()
 
@@ -119,7 +120,7 @@ class AppSeeder:
             if i['name'] in currentlist:
                 continue
 
-            option = OptionMod(name=i['name'], value=str(i['value']), type=1)
+            option = Option(name=i['name'], value=str(i['value']), type=1)
             session.add(option)
             count += 1
 

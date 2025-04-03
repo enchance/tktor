@@ -17,7 +17,7 @@ from core.config import settings as s
 from authentication import Account
 from core import SessionDep
 from models.auth_models import ProfileMod, AddressMod
-from models.common_models import OptionMod
+from models.common_models import Option
 # from routes import accountrouter, authrouter
 from dev.seeder import devrouter
 from tests.routes import testrouter
@@ -110,7 +110,7 @@ async def foo(request: Request, session: SessionDep):
             AddressMod(),
         ],
         options_rel=[
-            OptionMod(name='foo', value='bar')
+            Option(name='foo', value='bar')
         ]
     )
     session.add(account)
@@ -119,12 +119,12 @@ async def foo(request: Request, session: SessionDep):
     ic(type(account), account)
 
     stmt = select(Account).where(Account.email == 'aaa@aaa.com') \
-        .options(selectinload(Account.profile), selectinload(Account.bans), selectinload(Account.addresses),
+        .options(selectinload(Account.profile), selectinload(Account.bans_received), selectinload(Account.addresses),
                  selectinload(Account.options_rel))
     exec_ = await session.exec(stmt)
     account = exec_.one_or_none()
 
-    # opts = OptionMod(name='hey', value='you', owner=account)
+    # opts = OptionMod(name='hey', value='you', account=account)
     # account.options_rel.append(opts)
     # session.add(account)
     # await session.commit()
@@ -135,7 +135,7 @@ async def foo(request: Request, session: SessionDep):
     # session.add(account.profile)
     # await session.commit()
     # profile: ProfileMod = account.profile
-    ic(account.bans, account.profile.firstname, account.addresses, account.options_rel)
+    ic(account.bans_received, account.profile.firstname, account.addresses, account.options_rel)
 
     # profile = await session.get(ProfileMod, 5)
     # ic(profile.account)

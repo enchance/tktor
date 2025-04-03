@@ -22,7 +22,7 @@ echo "[Flushing redis...]"
 docker exec -t $REDIS_CONTAINER bash -c "redis-cli FLUSHDB" \
     && echo "[Redis flushed]"
 
-# Seed
-echo '[Seeding...]'
-curl localhost:8000/dev/seed
-echo '[Seeding complete]'
+## Seed
+#echo '[Seeding...]'
+#curl localhost:8000/dev/seed
+#echo '[Seeding complete]'

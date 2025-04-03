@@ -18,7 +18,7 @@ from models.auth_models import ProfileMod
 
 
 if TYPE_CHECKING:
-    from models.common_models import OptionMod
+    from models.common_models import Option
 
     # from core.dependencies import validate_token
     # from core.services import AccountSvc
@@ -347,7 +347,7 @@ class TestAccount:
 class TestAccountManagement:
     @staticmethod
     async def _fetch_ban(id_: int, sess: AsyncSession):
-        stmt = select(BanMod).where(BanMod.recipient_id == id_, BanMod.is_active == True)
+        stmt = select(BanMod).where(BanMod.account_id == id_, BanMod.is_active == True)
         exec_ = await sess.exec(stmt)  # noqa
         return exec_.one_or_none()
 
@@ -411,7 +411,7 @@ class TestAccountManagement:
         assert user1.is_banned
         ban = await self._fetch_ban(user1.id, session)
         assert ban
-        assert ban.owner_id == moderator.id
+        assert ban.implementor_id == moderator.id
         account = await Account.get(user1.uid, session=session)
         assert account.is_cache
         assert account.is_banned
@@ -425,7 +425,7 @@ class TestAccountManagement:
         assert user2.is_banned
         ban = await self._fetch_ban(user2.id, session)
         assert ban
-        assert ban.owner_id == admin.id
+        assert ban.implementor_id == admin.id
         account = await Account.get(user2.uid, session=session)
         assert account.is_cache
         assert account.is_banned
@@ -439,7 +439,7 @@ class TestAccountManagement:
         assert user3.is_banned
         ban = await self._fetch_ban(user3.id, session)
         assert ban
-        assert ban.owner_id == superadmin.id
+        assert ban.implementor_id == superadmin.id
         account = await Account.get(user3.uid, session=session)
         assert account.is_cache
         assert account.is_banned
@@ -470,7 +470,7 @@ class TestAccountManagement:
         assert moderator1.is_banned
         ban = await self._fetch_ban(moderator1.id, session)
         assert ban
-        assert ban.owner_id == admin.id
+        assert ban.implementor_id == admin.id
         account = await Account.get(moderator1.uid, session=session)
         assert account.is_cache
         assert account.is_banned
@@ -484,7 +484,7 @@ class TestAccountManagement:
         assert moderator2.is_banned
         ban = await self._fetch_ban(moderator2.id, session)
         assert ban
-        assert ban.owner_id == superadmin.id
+        assert ban.implementor_id == superadmin.id
         account = await Account.get(moderator2.uid, session=session)
         assert account.is_cache
         assert account.is_banned
@@ -511,7 +511,7 @@ class TestAccountManagement:
         assert admin.is_banned
         ban = await self._fetch_ban(admin.id, session)
         assert ban
-        assert ban.owner_id == superadmin.id
+        assert ban.implementor_id == superadmin.id
         account = await Account.get(admin.uid, session=session)
         assert account.is_cache
         assert account.is_banned

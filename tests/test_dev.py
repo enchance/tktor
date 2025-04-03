@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload  # noqa
 from functools import reduce  # noqa
 
 from core import ic, Envs
-from models.common_models import OptionMod
+from models.common_models import Option
 from core.config import get_session_context
 # from account import AccountSvc, Token
 from authentication import Account, Role, AccountCache, UserOptions
@@ -47,11 +47,6 @@ class TestDev:
             # exec_ = await session.exec(stmt)
             # data = exec_.one_or_none()
             # ic(data)
-
-            # stmt = select(Option.name, Option.value).where(Option.owner_id == 1)  # noqa
-            # exec_ = await session.exec(stmt)  # noqa
-            # data = exec_.all()
-            # ic(dict(data))
 
             # account = await AccountSvc.get_by_email('obutler@example.com', session=session)
             # account = await AccountSvc.get_by_uid('9df68967c33acdca8fa812da0925', session=session)

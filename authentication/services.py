@@ -7,7 +7,7 @@ from core.config import settings as s
 from authentication import Auth as auth_
 # from .Auth import Account, Role, BanMod
 from models.auth_models import BanMod
-from models.common_models import OptionMod
+from models.common_models import Option
 
 if TYPE_CHECKING:
     from authentication import Account, Role
@@ -75,7 +75,7 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:
         """
-        stmt = select(OptionMod.name, OptionMod.value).where(OptionMod.owner_id == id_)  # noqa
+        stmt = select(Option.name, Option.value).where(Option.account_id == id_)  # noqa
         exec_ = await session.exec(stmt)
         if data := exec_.all():
             return dict(data)
@@ -149,7 +149,7 @@ class AccountSvc:
         :return:                Banned account
         """
         try:
-            ban = BanMod(recipient_id=to_ban.id, owner_id=authorization.id, notes=notes)
+            ban = BanMod(account_id=to_ban.id, implementor_id=authorization.id, notes=notes)
             session.add(ban)
 
             stmt = update(auth_.Account).where(auth_.Account.id == to_ban.id).values(is_banned=True)  # noqa
@@ -175,7 +175,7 @@ class AccountSvc:
         """
         try:
             stmt = (update(BanMod)
-                    .where(BanMod.recipient_id == to_ban.id, BanMod.owner_id == authorization.id,  # noqa
+                    .where(BanMod.account_id == to_ban.id, BanMod.implementor_id == authorization.id,  # noqa
                            BanMod.is_active == True)  # noqa
                     .values(is_active=False))  # noqa
             await session.exec(stmt)  # noqa

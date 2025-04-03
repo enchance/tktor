@@ -9,7 +9,7 @@ from .common_models import IntPkMixin, DTMixin, UpdatedAtMixin
 class OrderMod(UpdatedAtMixin, ABC):
     id: int = Field(primary_key=True, nullable=False)
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
-    owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
 
 
@@ -28,20 +28,20 @@ class TradeMod(DTMixin, ABC):
     transacted_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
     order_id: int = Field(foreign_key='xch_order.id', ondelete='CASCADE', nullable=False)
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
-    owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
 
 
 class WalletMod(DTMixin, IntPkMixin, ABC):
     asset: str = Field(max_length=20, index=True)
     amount: str = Field(max_length=199)
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
-    owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
 
 
 class ExchangeMod(DTMixin, IntPkMixin, ABC):
     name: str = Field(max_length=199)
     website: str = Field(max_length=199)
     description: str = Field(sa_column=Column(TEXT, default='', server_default=''))
-    owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)

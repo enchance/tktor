@@ -24,8 +24,8 @@ class TestCore:
 
     # @mark.focus
     async def test_taxonomy(self, session, account_, make_taxonomy):
-        foo = await make_taxonomy(name='foo the one', owner=account_)
-        bar = await make_taxonomy(name='bar the two', owner=account_, parent=foo)
+        foo = await make_taxonomy(name='foo the one', account=account_)
+        bar = await make_taxonomy(name='bar the two', account=account_, parent=foo)
 
         assert not foo.parent
         assert foo.children == [bar]

@@ -5,7 +5,7 @@ from redis_om import NotFoundError, get_redis_connection
 
 from models import modstr
 from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod, RoleMod
-from models.common_models import OptionMod, Taxonomy
+from models.common_models import Option, Taxonomy
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
 from authentication import enums, schemas, services as svc
@@ -22,12 +22,12 @@ class Account(AccountMod, SQLModel, table=True):
     profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
                                          cascade_delete=True)
     taxonomies: list['Taxonomy'] = Relationship(back_populates='account')
-    options_rel: list['OptionMod'] = Relationship(back_populates='owner', cascade_delete=True)
+    options_rel: list['Option'] = Relationship(back_populates='account', cascade_delete=True)
     addresses: list['AddressMod'] = Relationship(back_populates='account', cascade_delete=True)
-    bans: list['BanMod'] = Relationship(
-        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'}, cascade_delete=True)
-    ban_owners: list['BanMod'] = Relationship(
-        back_populates='banner', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'}, cascade_delete=True)
+    bans_received: list['BanMod'] = Relationship(
+        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.account_id]'}, cascade_delete=True)
+    bans_implemented: list['BanMod'] = Relationship(
+        back_populates='implementor', sa_relationship_kwargs={'foreign_keys': '[BanMod.implementor_id]'}, cascade_delete=True)
 
     orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
     trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
@@ -215,7 +215,7 @@ class Account(AccountMod, SQLModel, table=True):
             #     AddressMod(),
             #     AddressMod(),
             # ],
-            options_rel=[OptionMod(**i, type=2) for i in SEED_USER_OPTIONS]
+            options_rel=[Option(**i, type=2) for i in SEED_USER_OPTIONS]
         )
         session.add(account)
         await session.commit()

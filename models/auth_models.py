@@ -14,21 +14,21 @@ if TYPE_CHECKING:
 
 class BanMod(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
     __tablename__ = 'auth_ban'
-    recipient_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-    owner_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    implementor_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     notes: str = Field(sa_column=Column(Text, default='', server_default=''))
     is_active: bool = Field(default=True)
     banned_at: datetime | None = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=True))
     # --
     account: 'Account' = Relationship(
-        back_populates='bans', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'})
-    banner: 'Account' = Relationship(
-        back_populates='ban_owners', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'})
+        back_populates='bans_received', sa_relationship_kwargs={'foreign_keys': '[BanMod.account_id]'})
+    implementor: 'Account' = Relationship(
+        back_populates='bans_implemented', sa_relationship_kwargs={'foreign_keys': '[BanMod.implementor_id]'})
 
 
     def __str__(self):
-        return modstr(self, 'recipient_id', 'is_active')
+        return modstr(self, 'account_id', 'is_active')
 
 
 class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
@@ -37,7 +37,7 @@ class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
     address2: str = Field(max_length=199, default='')
     city: str = Field(max_length=199, default='')
     zip: str = Field(max_length=199, default='')
-    owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    account_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     # --
     account: 'Account' = Relationship(back_populates='addresses')
 
@@ -51,7 +51,6 @@ class ProfileMod(SQLModel, table=True):
     mobile: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
     telephone: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
     gender: str = Field(sa_column=Column(String(50), default='', server_default=''))
-    # owner_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
     # --
     account: 'Account' = Relationship(back_populates='profile')

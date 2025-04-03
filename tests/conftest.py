@@ -5,11 +5,11 @@ from redis_om import get_redis_connection
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
 from faker import Faker
-from slugify import slugify  # noqa
+from slugify import slugify
 
 from main import app
 from core import ic  # noqa
-from authentication import Auth as auth_
+from authentication import Auth as auth
 from authentication import schemas
 from models.common_models import Taxonomy
 
@@ -17,7 +17,7 @@ from models.common_models import Taxonomy
 fake = Faker()
 
 if TYPE_CHECKING:
-    from authentication import Account
+    from authentication import Account, Role
 
 
 @pytest.fixture
@@ -46,12 +46,12 @@ def redis_conn():
 
 
 @pytest.fixture
-async def account_(session) -> auth_.Account:
-    account = await auth_.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                         firstname=fake.first_name(), lastname=fake.last_name(),
-                                         username=fake.user_name(),
-                                         display=fake.word(), gender='male', social=dict(a='b', c=24),
-                                         provider='fake-provider', website=fake.url(), session=session)
+async def account_(session) -> 'Account':
+    account = await auth.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
+                                        firstname=fake.first_name(), lastname=fake.last_name(),
+                                        username=fake.user_name(),
+                                        display=fake.word(), gender='male', social=dict(a='b', c=24),
+                                        provider='fake-provider', website=fake.url(), session=session)
     await session.refresh(account, attribute_names=['profile'])
     yield account
     schemas.AccountCache.delete(account.uid)
@@ -60,15 +60,15 @@ async def account_(session) -> auth_.Account:
 
 
 @pytest.fixture()
-def account_factory() -> Callable[..., Awaitable[auth_.Account]]:
+def account_factory() -> Callable[..., Awaitable['Account']]:
     async def foo(*, is_moderator: bool = False, is_admin: bool = False, is_superadmin: bool = False,
-                  session: AsyncSession) -> auth_.Account:
-        return await auth_.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
-                                          firstname=fake.first_name(), lastname=fake.last_name(),
-                                          username=fake.user_name(),
-                                          display=fake.word(), gender='male', social=dict(facebook=fake.url()),
-                                          provider='fake-provider', website=fake.url(), is_moderator=is_moderator,
-                                          is_admin=is_admin, is_superadmin=is_superadmin, session=session)
+                  session: AsyncSession) -> 'Account':
+        return await auth.Account.create(uid=token_hex(14), email=fake.email(), avatar=fake.image_url(),
+                                         firstname=fake.first_name(), lastname=fake.last_name(),
+                                         username=fake.user_name(),
+                                         display=fake.word(), gender='male', social=dict(facebook=fake.url()),
+                                         provider='fake-provider', website=fake.url(), is_moderator=is_moderator,
+                                         is_admin=is_admin, is_superadmin=is_superadmin, session=session)
 
 
     return foo
@@ -96,14 +96,14 @@ async def generate_accounts(redis_conn, account_factory, session):
 
 
 @pytest.fixture
-async def role_(redis_conn, session) -> auth_.Role:
+async def role_(redis_conn, session) -> 'Role':
     actions = ['eat', 'sleep', 'buy', 'write', 'check', 'ban', 'create', 'ignore']
     permissions = {f'{random.choice(actions)}.{fake.word()}' for _ in range(3)}
-    role = auth_.Role(name=fake.word(), permissions=permissions)  # noqa
+    role = auth.Role(name=fake.word(), permissions=permissions)  # noqa
 
     session.add(role)
     await session.commit()
-    auth_.Role.set_cache(role.name, role.permissions)
+    auth.Role.set_cache(role.name, role.permissions)
     yield role
     redis_conn.delete(f'role:{role.name}')
     await session.delete(role)
@@ -129,8 +129,8 @@ def bearer_token() -> str:
 
 @pytest.fixture
 def make_taxonomy(session):
-    async def func(*, name: str, owner: 'Account', parent: ['Account', None] = None) -> 'Taxonomy':
-        tax = Taxonomy(name=name, slug=slugify(name), owner=owner, parent=parent)  # noqa
+    async def func(*, name: str, account: 'Account', parent: ['Account', None] = None) -> 'Taxonomy':
+        tax = Taxonomy(name=name, slug=slugify(name), account=account, parent=parent)  # noqa
         session.add(tax)
         await session.commit()
         await session.refresh(tax, ['parent', 'children'])

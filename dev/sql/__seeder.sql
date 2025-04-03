@@ -26,7 +26,7 @@ VALUES ('site_name', 'Tktor', 1),
        ('comment_threads', 'False', 1),
        ('comment_depth', '2', 1),
        ('show_avatars', 'True', 1),
-       ('avatar_default_url', '', 1) ON CONFLICT (name, owner_id) DO NOTHING;
+       ('avatar_default_url', '', 1) ON CONFLICT (name, account_id) DO NOTHING;
 -- ===========================================================================
 -- ===========================================================================
 
