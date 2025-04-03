@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Relationship
 
+from models import modstr
 from models.trade_models import OrderMod, TradeMod, WalletMod, ExchangeMod
 
 
@@ -15,6 +16,10 @@ class Order(OrderMod, SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='orders')
 
 
+    def __repr__(self):
+        return modstr(self)
+
+
 class Trade(TradeMod, SQLModel, table=True):
     __tablename__ = 'xch_trade'
     order: 'Order' = Relationship(back_populates='trades')
@@ -22,10 +27,18 @@ class Trade(TradeMod, SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='trades')
 
 
+    def __repr__(self):
+        return modstr(self, 'symbol')
+
+
 class Wallet(WalletMod, SQLModel, table=True):
     __tablename__ = 'xch_wallet'
     exchange: 'Exchange' = Relationship(back_populates='wallets')
     account: 'Account' = Relationship(back_populates='wallets')
+
+
+    def __repr__(self):
+        return modstr(self, 'asset')
 
 
 class Exchange(ExchangeMod, SQLModel, table=True):
@@ -35,3 +48,6 @@ class Exchange(ExchangeMod, SQLModel, table=True):
     trades: list['Trade'] = Relationship(back_populates='exchange')
     account: 'Account' = Relationship(back_populates='exchanges')
 
+
+    def __repr__(self):
+        return modstr(self, 'name')

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from redis_om import NotFoundError, get_redis_connection
 
 from models import modstr
-from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod, RoleMod
+from models.auth_models import Profile, AccountMod, Address, Ban, RoleMod
 from models.common_models import Option, Taxonomy
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
@@ -19,15 +19,15 @@ if TYPE_CHECKING:
 
 class Account(AccountMod, SQLModel, table=True):
     __tablename__ = 'auth_account'
-    profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
-                                         cascade_delete=True)
+    profile: 'Profile' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
+                                      cascade_delete=True)
     taxonomies: list['Taxonomy'] = Relationship(back_populates='account')
     options_rel: list['Option'] = Relationship(back_populates='account', cascade_delete=True)
-    addresses: list['AddressMod'] = Relationship(back_populates='account', cascade_delete=True)
-    bans_received: list['BanMod'] = Relationship(
-        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.account_id]'}, cascade_delete=True)
-    bans_implemented: list['BanMod'] = Relationship(
-        back_populates='implementor', sa_relationship_kwargs={'foreign_keys': '[BanMod.implementor_id]'}, cascade_delete=True)
+    addresses: list['Address'] = Relationship(back_populates='account', cascade_delete=True)
+    bans_received: list['Ban'] = Relationship(
+        back_populates='account', sa_relationship_kwargs={'foreign_keys': '[Ban.account_id]'}, cascade_delete=True)
+    bans_implemented: list['Ban'] = Relationship(
+        back_populates='implementor', sa_relationship_kwargs={'foreign_keys': '[Ban.implementor_id]'}, cascade_delete=True)
 
     orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
     trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
@@ -204,13 +204,13 @@ class Account(AccountMod, SQLModel, table=True):
         kw = kwargs.copy()
         meta = dict(provider=[provider])
         for i in kw.keys():
-            if i not in {*Account.model_fields.keys(), *ProfileMod.model_fields.keys()}:
+            if i not in {*Account.model_fields.keys(), *Profile.model_fields.keys()}:
                 meta[i] = kwargs.pop(i)
 
         account = cls(
             uid=uid, email=email.lower(), avatar=avatar, roles=roles, display=display, username=username,
             is_banned=is_banned, is_verified=False,
-            profile=ProfileMod(firstname=firstname, lastname=lastname, meta=meta, **kwargs),
+            profile=Profile(firstname=firstname, lastname=lastname, meta=meta, **kwargs),
             # addresses=[
             #     AddressMod(),
             #     AddressMod(),

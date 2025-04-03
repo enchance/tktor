@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from authentication import Account
 
 
-class BanMod(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
+class Ban(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
     __tablename__ = 'auth_ban'
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     implementor_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
@@ -22,16 +22,16 @@ class BanMod(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=True))
     # --
     account: 'Account' = Relationship(
-        back_populates='bans_received', sa_relationship_kwargs={'foreign_keys': '[BanMod.account_id]'})
+        back_populates='bans_received', sa_relationship_kwargs={'foreign_keys': '[Ban.account_id]'})
     implementor: 'Account' = Relationship(
-        back_populates='bans_implemented', sa_relationship_kwargs={'foreign_keys': '[BanMod.implementor_id]'})
+        back_populates='bans_implemented', sa_relationship_kwargs={'foreign_keys': '[Ban.implementor_id]'})
 
 
     def __str__(self):
         return modstr(self, 'account_id', 'is_active')
 
 
-class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
+class Address(IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'auth_address'
     address1: str = Field(max_length=199, default='')
     address2: str = Field(max_length=199, default='')
@@ -42,7 +42,7 @@ class AddressMod(IntPkMixin, DTMixin, SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='addresses')
 
 
-class ProfileMod(SQLModel, table=True):
+class Profile(SQLModel, table=True):
     __tablename__ = 'auth_profile'
     id: int | None = Field(primary_key=True, foreign_key='auth_account.id', unique=True, ondelete='CASCADE')
     firstname: str = Field(sa_column=Column(Text, default='', server_default=''))

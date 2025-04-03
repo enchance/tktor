@@ -12,9 +12,9 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dev.data import SEED_ROLES
-from authentication import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, BanMod
+from authentication import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, Ban
 from core import InvalidToken, ic, ForbiddenException
-from models.auth_models import ProfileMod
+from models.auth_models import Profile
 
 
 if TYPE_CHECKING:
@@ -172,7 +172,7 @@ class TestAccount:
         # assert set(account_.permissions) == set(
         #     utils.reduce_permissions([*SEED_ROLES['user'], *SEED_ROLES['devtesting']]))
 
-        profile: ProfileMod = account_.profile
+        profile: Profile = account_.profile
         if profile.firstname or profile.lastname:
             assert f'{profile.firstname} {profile.lastname}'.strip() == profile.fullname
 
@@ -347,7 +347,7 @@ class TestAccount:
 class TestAccountManagement:
     @staticmethod
     async def _fetch_ban(id_: int, sess: AsyncSession):
-        stmt = select(BanMod).where(BanMod.account_id == id_, BanMod.is_active == True)
+        stmt = select(Ban).where(Ban.account_id == id_, Ban.is_active == True)
         exec_ = await sess.exec(stmt)  # noqa
         return exec_.one_or_none()
 

@@ -16,7 +16,7 @@ from core import ic
 from core.config import settings as s
 from authentication import Account
 from core import SessionDep
-from models.auth_models import ProfileMod, AddressMod
+from models.auth_models import Profile, Address
 from models.common_models import Option
 # from routes import accountrouter, authrouter
 from dev.seeder import devrouter
@@ -104,10 +104,10 @@ async def healthz(request: Request):
 async def foo(request: Request, session: SessionDep):
     account = Account(
         email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
-        profile=ProfileMod(firstname='haha', mobile=['123', '456']),
+        profile=Profile(firstname='haha', mobile=['123', '456']),
         addresses=[
-            AddressMod(),
-            AddressMod(),
+            Address(),
+            Address(),
         ],
         options_rel=[
             Option(name='foo', value='bar')
