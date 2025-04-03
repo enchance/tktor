@@ -1,3 +1,4 @@
+from abc import ABC
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Column, Field, DateTime, func, TEXT, Relationship, UniqueConstraint, text, Integer
 from sqlalchemy.orm import declared_attr
@@ -45,25 +46,26 @@ class MetaMixin:
         self._is_cache = value
 
 
-# class Taxonomy(IntPkMixin, DTMixin, SQLModel, table=True):
-#     __tablename__ = 'app_taxonomy'
-#     __table_args__ = (UniqueConstraint('name', 'parent_id', 'owner_id'),)
-#     name: str = Field(max_length=199)
-#     slug: str = Field(max_length=199)
-#     parent_id: int | None = Field(default=None, foreign_key='app_taxonomy.id')
-#     type: str = Field(default='category', index=True)
-#     is_active: bool = Field(default=True)
-#     owner_id: int | None = Field(default=None, foreign_key='auth.account.id', ondelete='CASCADE')
-#
-#     # Relationships
-#     parent: 'Taxonomy' = Relationship(back_populates='children',
-#                                       sa_relationship_kwargs={'remote_side': '[Taxonomy.id]'})
-#     children: list['Taxonomy'] = Relationship(back_populates='parent')
-#     owner: 'Account' = Relationship(back_populates='taxonomies')  # noqa
-#
-#
-#     def __repr__(self) -> str:
-#         return modstr(self, 'name')
+class TaxonomyMod(IntPkMixin, DTMixin, ABC):
+    name: str = Field(max_length=199)
+    slug: str = Field(max_length=199)
+    parent_id: int | None = Field(default=None, foreign_key='app_taxonomy.id')
+    type: str = Field(default='category', index=True)
+    is_active: bool = Field(default=True)
+    account_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE')
+
+
+class Taxonomy(TaxonomyMod, SQLModel, table=True):
+    __tablename__ = 'app_taxonomy'
+    __table_args__ = (UniqueConstraint('name', 'parent_id', 'account_id'),)
+    parent: 'Taxonomy' = Relationship(back_populates='children',
+                                         sa_relationship_kwargs={'remote_side': '[Taxonomy.id]'})
+    children: list['Taxonomy'] = Relationship(back_populates='parent')
+    account: 'Account' = Relationship(back_populates='taxonomies')  # noqa
+
+
+    def __repr__(self) -> str:
+        return f'<Taxonomy {self.id}: {self.name}>'
 
 
 class OptionMod(IntPkMixin, DTMixin, SQLModel, table=True):

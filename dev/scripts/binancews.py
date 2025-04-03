@@ -27,13 +27,13 @@ async def wss():
         ic(e)
 
 
-async def all_trades():
+async def trade_history():
     client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
     # bsm = BinanceSocketManager(client)
 
     account_trades = await client.get_account()
     # traded_symbols = {balance['asset'] + "USDT" for balance in account_trades['balances']}  # Adjust for different pairs
-    traded_symbols = {bal['asset']: bal['free'] for bal in account_trades['balances'] if float(bal['free'])}
+    traded_symbols = {bal['asset']: bal for bal in account_trades['balances'] if float(bal['free'])}
     ic(traded_symbols)
 
     # Fetch trades for each symbol
@@ -43,4 +43,4 @@ async def all_trades():
 
 
 if __name__ == '__main__':
-    asyncio.run(all_trades())
+    asyncio.run(trade_history())

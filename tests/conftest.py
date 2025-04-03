@@ -1,5 +1,5 @@
 import os, random, httpx, pytest
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, TYPE_CHECKING, Union
 from secrets import token_hex
 from redis_om import get_redis_connection
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -10,9 +10,13 @@ from main import app
 from core import ic  # noqa
 from authentication import Auth as auth_
 from authentication import schemas
+from models.common_models import Taxonomy
 
 
 fake = Faker()
+
+if TYPE_CHECKING:
+    from authentication import Account
 
 
 @pytest.fixture
@@ -120,3 +124,16 @@ def bearer_token() -> str:
     token = os.getenv('DEV_TOKEN_VALID')
     return f'Bearer {token}'
     # return 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjBhYmQzYTQzMTc4YzE0MjlkNWE0NDBiYWUzNzM1NDRjMDlmNGUzODciLCJ0eXAiOiJKV1QifQ.eyJuYW1lIjoiSi5NLiBJbWJvbmciLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jSU5LVWI5TUtqak44d1JqTVRMdkJtajl1M0lCVXlFbEJ1cnRZSEFxS2QxR0J5SEh1QW89czk2LWMiLCJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vc2FuZGJveDItNzg0NTgiLCJhdWQiOiJzYW5kYm94Mi03ODQ1OCIsImF1dGhfdGltZSI6MTczNzEwMzM2OSwidXNlcl9pZCI6Im9pbU1UNm9jN3ZjcEJhM1psdzZ0TmZEd1NyRDMiLCJzdWIiOiJvaW1NVDZvYzd2Y3BCYTNabHc2dE5mRHdTckQzIiwiaWF0IjoxNzM3MTAzMzY5LCJleHAiOjE3MzcxMDY5NjksImVtYWlsIjoiam9obi5pbWJvbmdAbWludGNvbGxlZ2UuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZ29vZ2xlLmNvbSI6WyIxMDY1NDQzNTA2NTMzNTk2NDg3MDkiXSwiZW1haWwiOlsiam9obi5pbWJvbmdAbWludGNvbGxlZ2UuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoiZ29vZ2xlLmNvbSJ9fQ.BUwCUQi2BIuD-yf2eG7jqDFuQEQHypbgSMjpkK8l0Q2byVaHjphQXyFH82Dc7yPF1hmQEcz2Of7vIkVKsC2f0sFQOe7WY0ZXOQfE8YtCrQg1N2fDDSUH_zTYMI8YnrkxvyEGYiXmcjofuGDPdv0Y_wQjimSyxrHwTIWkFk2TQIvgCeKN0f-_MyYSHU6oOl5w1tFvAmZ1reHO5u92q4BH2GVET2LnujsvyTpFFss24pdF8BN_9rsAhPNVsvyQakxZ_iw1nm4yNdC40XcZOKGTaP4y9E8sdAtj0bTLYL51yqTz5tXXNPMR772uNOARH1JsgWmyDsuAbFd7H_GFzEUmag'
+
+
+@pytest.fixture
+def make_taxonomy(session):
+    async def func(name: str, owner: 'Account', parent: ['Account', None]) -> 'Taxonomy':
+        tax = Taxonomy(name=name, owner=owner, parent=parent)  # noqa
+        session.add(tax)
+        await session.commit()
+        await session.refresh(tax)
+        return tax
+
+
+    return func

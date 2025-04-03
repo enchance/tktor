@@ -5,12 +5,12 @@ from redis_om import NotFoundError, get_redis_connection
 
 from models import modstr
 from models.auth_models import ProfileMod, AccountMod, AddressMod, BanMod, RoleMod
-from models.common_models import OptionMod
+from models.common_models import OptionMod, Taxonomy
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
 from authentication import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS
-from trades import TradeLog, Wallet
+from exchange import Order, Trade, Wallet, Exchange
 
 
 if TYPE_CHECKING:
@@ -21,14 +21,18 @@ class Account(AccountMod, SQLModel, table=True):
     __tablename__ = 'auth_account'
     profile: 'ProfileMod' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
                                          cascade_delete=True)
+    taxonomies: list['Taxonomy'] = Relationship(back_populates='account')
     options_rel: list['OptionMod'] = Relationship(back_populates='owner', cascade_delete=True)
     addresses: list['AddressMod'] = Relationship(back_populates='account', cascade_delete=True)
-    trades: list['TradeLog'] = Relationship(back_populates='account', cascade_delete=True)
-    wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
     bans: list['BanMod'] = Relationship(
         back_populates='account', sa_relationship_kwargs={'foreign_keys': '[BanMod.recipient_id]'}, cascade_delete=True)
     ban_owners: list['BanMod'] = Relationship(
         back_populates='banner', sa_relationship_kwargs={'foreign_keys': '[BanMod.owner_id]'}, cascade_delete=True)
+
+    orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
+    trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
+    wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
+    exchanges: list['Exchange'] = Relationship(back_populates='account', cascade_delete=True)
 
 
     def __repr__(self):
@@ -295,10 +299,11 @@ class Account(AccountMod, SQLModel, table=True):
         """Check if user has the right permissions"""
         return action in self.permissions
 
+
     @staticmethod
     async def ban(*, authorization: 'Account', to_ban: 'Account', session: AsyncSession, notes: str = '') -> Union[
         'Account',
-    None]:
+        None]:
         """
         Ban an account.
         :param authorization:   Account doing the ban
@@ -322,7 +327,7 @@ class Account(AccountMod, SQLModel, table=True):
             raise ForbiddenException('CANNOT_BAN_YOURSELF')
 
         if banned_account := await svc.AccountSvc.ban_user(authorization=authorization, to_ban=to_ban, notes=notes,
-                                                       session=session):
+                                                           session=session):
             banned_account.update_cache(dict(is_banned=True))
             logger.info(msg=f'Ban account {banned_account.uid} by {authorization.uid}', id=banned_account.uid)
             return banned_account

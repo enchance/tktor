@@ -20,23 +20,25 @@ class TestCore:
     #     foo = SystemOptionsSchema(default_role=datastr)
     #     assert foo.default_role == {'foo', 'bar', 'baz'}
     #     assert isinstance(foo.default_role, set)
-    #
-    #
-    # # @mark.focus
-    # async def test_taxonomy(self, session, account_, make_taxonomy):
-    #     foo = await make_taxonomy(name='foo', owner=account_)
-    #     bar = await make_taxonomy(name='bar', owner=account_, parent=foo)
-    #     await session.refresh(foo, ['children'])  # noqa
-    #
-    #     # stmt = select(Taxonomy).options(selectinload(Taxonomy.children)).where(Taxonomy.id == foo.id)  # noqa
-    #     # exec_ = await session.exec(stmt)
-    #     # foo = exec_.first()
-    #
-    #     assert bar.parent == foo
-    #     assert foo.children == [bar]
-    #
-    #     await session.delete(account_)
-    #     await session.commit()
+
+
+    # @mark.focus
+    @mark.skip
+    async def test_taxonomy(self, session, account_, make_taxonomy):
+        foo = await make_taxonomy(name='foo', owner=account_)
+        bar = await make_taxonomy(name='bar', owner=account_, parent=foo)
+        await session.refresh(foo, ['children'])  # noqa
+        await session.refresh(bar, ['parent'])  # noqa
+
+        # stmt = select(Taxonomy).options(selectinload(Taxonomy.children)).where(Taxonomy.id == foo.id)  # noqa
+        # exec_ = await session.exec(stmt)
+        # foo = exec_.first()
+
+        assert bar.parent == foo
+        assert foo.children == [bar]
+
+        await session.delete(account_)
+        await session.commit()
 
 
 class TestUtils:
