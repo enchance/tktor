@@ -45,9 +45,9 @@ mock_decoded_token = {'aud': 'foo-123',
 
 
 class TestToken:
-    @mark.focus
-    @mark.skip
-    @mock.patch('authentication.dependencies.auth.verify_id_token', return_value=mock_decoded_token)
+    # @mark.focus
+    # @mark.skip
+    @mock.patch('authentication.dependencies.fbauth.verify_id_token', return_value=mock_decoded_token)
     def test_valid_token_mock(self, _):
         mock_token = 'valid_token'
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
@@ -55,9 +55,9 @@ class TestToken:
         assert result == mock_decoded_token
 
 
-    @mark.focus
-    @mark.skip
-    @mock.patch('authentication.dependencies.auth.verify_id_token', side_effect=InvalidToken)
+    # @mark.focus
+    # @mark.skip
+    @mock.patch('authentication.dependencies.fbauth.verify_id_token', side_effect=InvalidToken)
     def test_invalid_token_mock(self, _):
         mock_token = "invalid_token"
         creds = HTTPAuthorizationCredentials(scheme='Bearer', credentials=mock_token)
