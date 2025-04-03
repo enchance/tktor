@@ -23,21 +23,21 @@ class TestCore:
 
 
     # @mark.focus
-    @mark.skip
     async def test_taxonomy(self, session, account_, make_taxonomy):
-        foo = await make_taxonomy(name='foo', owner=account_)
-        bar = await make_taxonomy(name='bar', owner=account_, parent=foo)
-        await session.refresh(foo, ['children'])  # noqa
-        await session.refresh(bar, ['parent'])  # noqa
+        foo = await make_taxonomy(name='foo the one', owner=account_)
+        bar = await make_taxonomy(name='bar the two', owner=account_, parent=foo)
 
-        # stmt = select(Taxonomy).options(selectinload(Taxonomy.children)).where(Taxonomy.id == foo.id)  # noqa
-        # exec_ = await session.exec(stmt)
-        # foo = exec_.first()
+        assert not foo.parent
+        assert foo.children == [bar]
+        assert foo.slug == 'foo-the-one'
 
         assert bar.parent == foo
-        assert foo.children == [bar]
+        assert bar.parent_id == foo.id
+        assert bar.slug == 'bar-the-two'
 
-        await session.delete(account_)
+        # Clean
+        await session.delete(foo)
+        await session.delete(bar)
         await session.commit()
 
 

@@ -5,6 +5,7 @@ from redis_om import get_redis_connection
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
 from faker import Faker
+from slugify import slugify  # noqa
 
 from main import app
 from core import ic  # noqa
@@ -128,11 +129,11 @@ def bearer_token() -> str:
 
 @pytest.fixture
 def make_taxonomy(session):
-    async def func(name: str, owner: 'Account', parent: ['Account', None]) -> 'Taxonomy':
-        tax = Taxonomy(name=name, owner=owner, parent=parent)  # noqa
+    async def func(*, name: str, owner: 'Account', parent: ['Account', None] = None) -> 'Taxonomy':
+        tax = Taxonomy(name=name, slug=slugify(name), owner=owner, parent=parent)  # noqa
         session.add(tax)
         await session.commit()
-        await session.refresh(tax)
+        await session.refresh(tax, ['parent', 'children'])
         return tax
 
 
