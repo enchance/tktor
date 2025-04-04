@@ -8,6 +8,19 @@ from .common_models import IntPkMixin, DTMixin, UpdatedAtMixin
 
 class OrderMod(UpdatedAtMixin, ABC):
     id: int = Field(primary_key=True, nullable=False)
+    symbol: str = Field(max_length=20, nullable=False)
+    price: str = Field(max_length=199, nullable=False)
+    amount: str = Field(max_length=199, nullable=False)
+    quote: str = Field(max_length=199, nullable=False)
+    executed_amount: str = Field(max_length=199, nullable=False)
+    cumulative_amount: str = Field(max_length=199, nullable=False)
+    status: str = Field(max_length=199, nullable=False)
+    time_in_force: str = Field(max_length=10, nullable=False)
+    type: str = Field(max_length=20, nullable=False)
+    side: str = Field(max_length=20, nullable=False)
+    stop_price: str = Field(max_length=199, nullable=False)
+    iceberg: str = Field(max_length=199, nullable=False)
+    implemented_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
@@ -25,7 +38,7 @@ class TradeMod(DTMixin, ABC):
     is_buyer: bool = Field(nullable=False)
     is_maker: bool = Field(nullable=False)
     is_best_match: bool = Field(nullable=False)
-    transacted_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
+    implemented_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
     order_id: int = Field(foreign_key='xch_order.id', ondelete='CASCADE', nullable=False)
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)

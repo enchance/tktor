@@ -34,6 +34,9 @@ numpy
 
 # Project
 python-binance
+pandas
+numpy
+supervisor
 
 # Documentation
 # mkdocs

@@ -14,8 +14,10 @@ services:
     <<: *envbase
     ports:
       - "8000:8000"
+      - "8888:8888"
     volumes:
       - .:/app
+#      - ./dev/supervisor.conf:/app/supervisor.conf
     develop:
       watch:
         - action: rebuild
@@ -27,6 +29,8 @@ services:
       - redis
 #      - mailhog
     command: ["fastapi", "dev", "--host", "0.0.0.0"]
+#    command: ["supervisord", "-c", "/app/dev/supervisor.conf"]
+
 
   pgdb:
     image: tktor-postgres:latest
@@ -63,6 +67,12 @@ services:
 #    ports:
 #      - "1025:1025"
 #      - "8025:8025"
+
+#  jupyter:
+#    image: quay.io/jupyter/scipy-notebook:python-3.12
+#    container_name: jupyter
+#    ports:
+#      - "8888:8888"
 
 volumes:
   tktordb:
