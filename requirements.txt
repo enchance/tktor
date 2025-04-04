@@ -32,6 +32,9 @@ jupyterlab
 pandas
 numpy
 
+# Project
+python-binance
+
 # Documentation
 # mkdocs
 # mkdocs-material[imaging]
