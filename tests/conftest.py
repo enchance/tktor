@@ -2,7 +2,7 @@ import os, random, httpx, pytest
 from typing import Callable, Awaitable, TYPE_CHECKING, Union
 from secrets import token_hex
 from redis_om import get_redis_connection
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
 from faker import Faker
 from slugify import slugify
@@ -24,12 +24,13 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def async_engine():
-    return create_async_engine(os.getenv('POSTGRES_URL'), echo=True, future=True)
+    return create_async_engine(os.getenv('POSTGRES_URL'), echo=False, future=True)
 
 
 @pytest.fixture
 async def session(async_engine):
-    async with AsyncSession(async_engine) as session:
+    async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
         yield session
 
 
