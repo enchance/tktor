@@ -50,7 +50,5 @@ class Exchange(ExchangeMod, SQLModel, table=True):
     trades: list['Trade'] = Relationship(back_populates='exchange')
 
 
-    # account: 'Account' = Relationship(back_populates='exchanges')
-
     def __repr__(self):
         return modstr(self, 'name')

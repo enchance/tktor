@@ -1,7 +1,6 @@
 # Primary
 fastapi[standard]
 sqlmodel
-sqlalchemy[asyncio]
 asyncpg
 icecream
 python-decouple

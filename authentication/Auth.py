@@ -32,7 +32,6 @@ class Account(AccountMod, SQLModel, table=True):
     orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
     trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
     wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
-    # exchanges: list['Exchange'] = Relationship(back_populates='account', cascade_delete=True)
 
 
     def __repr__(self):
