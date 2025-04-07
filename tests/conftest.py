@@ -2,7 +2,7 @@ import os, random, httpx, pytest
 from typing import Callable, Awaitable, TYPE_CHECKING, Union
 from secrets import token_hex
 from redis_om import get_redis_connection
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from faker import Faker
 from slugify import slugify
@@ -29,8 +29,7 @@ def async_engine():
 
 @pytest.fixture
 async def session(async_engine):
-    async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
-    async with async_session() as session:
+    async with AsyncSession(async_engine) as session:
         yield session
 
 
