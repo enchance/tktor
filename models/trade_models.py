@@ -7,9 +7,9 @@ from core import ic
 from .common_models import IntPkMixin, DTMixin, UpdatedAtMixin
 
 
-class OrderMod(UpdatedAtMixin, ABC):
+class OrderMod(ABC):
     id: int | None = Field(primary_key=True, nullable=False)
-    exchange_orderid: str = Field(max_length=199, unique=True, nullable=False)
+    exchange_orderid: str = Field(max_length=199, nullable=False)
     client_orderid: str = Field(max_length=199, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     amount: str = Field(max_length=199, nullable=False)
@@ -23,27 +23,28 @@ class OrderMod(UpdatedAtMixin, ABC):
     type: str = Field(max_length=20, nullable=False)
     side: str = Field(max_length=20, nullable=False)
     iceberg_amount: str = Field(max_length=199, nullable=False)
-    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
+    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False, index=True)
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
-    updated_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
+    updated_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
 
 
-class TradeMod(ABC):
-    id: int = Field(primary_key=True, nullable=False)
+class TradeMod(UpdatedAtMixin, ABC):
+    id: int | None = Field(primary_key=True, nullable=False)
+    # exchange_orderid: str = Field(max_length=199, nullable=False)
+    exchange_tradeid: str = Field(max_length=199, nullable=False)
+    asset: str = Field(max_length=20, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     price: str = Field(max_length=199, nullable=False)
     amount: str = Field(max_length=199, nullable=False)  # quantity
     total: str = Field(max_length=199, nullable=False)  # quoteQty
     commission: str = Field(max_length=199, nullable=False)
-    asset: str = Field(max_length=199, nullable=False)  # commissionAsset
-    pair: str = Field(max_length=20, nullable=False)
     is_buyer: bool = Field(nullable=False)
     is_maker: bool = Field(nullable=False)
     is_best_match: bool = Field(nullable=False)
-    order_id: int = Field(foreign_key='xch_order.id', ondelete='CASCADE', nullable=False)
-    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
-    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
+    order_id: int | None = Field(max_length=199, foreign_key='xch_order.id', ondelete='CASCADE', default=None)
+    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', index=True)
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
 
 

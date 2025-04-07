@@ -1,4 +1,5 @@
 import os, asyncio, pytz
+from datetime import datetime as dt
 import pandas as pd
 from fastapi import APIRouter
 from sqlmodel import select
@@ -13,7 +14,7 @@ from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role,
 from exchange import Exchange
 from models import auth_models as authmod
 from models.common_models import Option
-from exchange.Trades import Order
+from exchange.Trades import Order, Trade
 from exchange import TradeSvc
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS
 
@@ -47,19 +48,22 @@ async def seed(session: SessionDep) -> dict[str, int]:
         account_count = await AppSeeder.generate_accounts(session)
         sys_options_count = await AppSeeder.generate_system_options(session)
         exchanges_count = await AppSeeder.seed_exchanges(session=session)
-        # orders_count = await AppSeeder.seed_orders(session=session)
-        dict_ = dict(accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
-                     )
+        order_count = await AppSeeder.seed_orders(session)
+        trade_count = await AppSeeder.seed_trades(session=session)
 
         _cache_system_options()
         await _user_custom_permissions()
 
+        dict_ = dict(accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
+                     orders=order_count, trades=trade_count)
+
         return dict_
 
 
-@devrouter.get('/orders')
-async def fetch_orders(session: SessionDep):
-    await AppSeeder.seed_orders(session=session)
+# @devrouter.get('/fill')
+# async def fetch_orders(session: SessionDep):
+#     await AppSeeder.seed_orders(session)
+#     await AppSeeder.seed_trades(session=session)
 
 
 class AppSeeder:
@@ -191,6 +195,13 @@ class AppSeeder:
             return df_
 
 
+        # Current
+        stmt = select(Order.id)
+        exec_ = await session.exec(stmt)
+        current = exec_.all()
+        if current:
+            return 0
+
         account = await AccountSvc.get_by_email(os.getenv('DEV_EMAIL_ADMIN'), session=session)
         binance = await TradeSvc.get_exchange('binance', session=session)
         client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
@@ -206,15 +217,89 @@ class AppSeeder:
             fulldf = pd.concat([fulldf, df], axis=0)
         fulldf = _clean_orders(fulldf)
 
+        total = 0
         for row in fulldf.itertuples(index=True):
             dd = row._asdict()  # noqa
             del dd['Index']
             dd['created_at'] = dd['created_at'].to_pydatetime().replace(tzinfo=pytz.utc)
             dd['updated_at'] = dd['updated_at'].to_pydatetime().replace(tzinfo=pytz.utc)
             dd['exchange_orderid'] = str(dd['exchange_orderid'])
+            # dd['id'] = str(dd['id'])
             order = Order(**dd, exchange=binance, account=account)
-            # ic(order.exchange_orderid)
             session.add(order)
+            total += 1
 
         if session.new:
             await session.commit()
+        return total
+
+
+    @staticmethod
+    async def seed_trades(session: AsyncSession):
+        # Current
+        stmt = select(Trade.id)
+        exec_ = await session.exec(stmt)
+        current = exec_.all()
+        if current:
+            return 0
+
+        account = await AccountSvc.get_by_email(os.getenv('DEV_EMAIL_ADMIN'), session=session)
+        binance = await TradeSvc.get_exchange('binance', session=session)
+        client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
+
+        tasks = []
+        # symbol = 'BANANAUSDT'
+        for symbol in SEED_SYMBOLS:
+            tasks.append(client.get_my_trades(symbol=symbol))
+        trades = await asyncio.gather(*tasks, return_exceptions=True)
+
+        stmt = select(Order).where(Order.symbol == symbol)
+        exec_ = await session.exec(stmt)
+        orderlist = exec_.all()
+
+        total = 0
+        for i in trades:
+            for t in i:
+                trade = Trade(
+                    # exchange_orderid=str(t['orderId']),
+                    exchange_tradeid=str(t['id']),
+                    price=t['price'],
+                    symbol=t['symbol'],
+                    commission=t['commission'],
+                    asset=t['commissionAsset'],
+                    is_best_match=t['isBestMatch'],
+                    is_buyer=t['isBuyer'],
+                    is_maker=t['isMaker'],
+                    amount=t['qty'],
+                    total=t['quoteQty'],
+                    created_at=dt.fromtimestamp(t['time'] / 1000, tz=pytz.utc),
+                    account=account,
+                    exchange=binance,
+                )
+                for order in orderlist:
+                    if order.exchange_orderid == str(t['orderId']):
+                        trade.order = order
+                        break
+
+                session.add(trade)
+                total += 1
+
+        if session.new:
+            await session.commit()
+        return total
+
+
+    @staticmethod
+    async def account_info(session: AsyncSession):
+        client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
+        trades = await client.get_account()
+        # ic(trades['balances'])
+
+        # ll = []
+        dict_ = {}
+        for i in trades['balances']:
+            if float(i['free']) or float(i['locked']):
+                dict_[i['asset']] = {'locked': i['locked'], 'free': i['free']}
+            # ll.append(i['asset'])
+        # ic(len(ll), len(set(ll)))
+        ic(dict_)
