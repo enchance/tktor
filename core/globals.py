@@ -5,10 +5,12 @@ from fastapi.logger import logger
 from icecream import IceCreamDebugger
 # from pythonjsonlogger import jsonlogger
 from pythonjsonlogger.json import JsonFormatter
+from dotenv import load_dotenv
 
 from core import Envs
 
 
+load_dotenv()
 ic = IceCreamDebugger(prefix='')
 try:
     env = Envs(os.getenv('ENV'))

@@ -11,6 +11,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
+from dotenv import load_dotenv
 
 from core import ic
 from core.config import settings as s
@@ -25,7 +26,7 @@ from tests.routes import testrouter
 
 # TODO: Review the test to ban/unban as the fields have changed
 
-
+load_dotenv()
 limiter = Limiter(key_func=get_remote_address, default_limits=['120/minute'])
 
 

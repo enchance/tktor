@@ -20,6 +20,7 @@ hiredis
 gunicorn
 
 # Development only
+alembic
 Faker
 pytest
 pytest-sugar
@@ -36,7 +37,7 @@ numpy
 python-binance
 pandas
 numpy
-supervisor
+# supervisor
 
 # Documentation
 # mkdocs

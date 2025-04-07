@@ -1,7 +1,10 @@
 from __future__ import annotations
 import os
 from abc import ABC
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 
 class StrTemplate:

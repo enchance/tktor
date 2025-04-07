@@ -1,10 +1,14 @@
 import os, secrets
 from faker import Faker
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from core import CommentStatus, ic
+
+
 # from auth import Opt
 
+load_dotenv()
 fake = Faker()
 
 SEED_ROLES = {
@@ -58,42 +62,52 @@ SEED_ACCOUNTS = {
     ],
     'user': [
         (os.getenv('DEV_EMAIL_USER'), 'User', 'Account', os.getenv('DEV_UID_USER'), ['email']),
-        ('user1@mail.com', 'User1', 'Account', secrets.token_hex(16), ['email']),   # custom perm
-        ('user2-banned@mail.com', 'User2', 'Account', secrets.token_hex(16), ['email']),   # banned
+        ('user1@mail.com', 'User1', 'Account', secrets.token_hex(16), ['email']),  # custom perm
+        ('user2-banned@mail.com', 'User2', 'Account', secrets.token_hex(16), ['email']),  # banned
         ('user3@mail.com', 'User3', 'Account', secrets.token_hex(16), ['email']),
     ],
 }
 
 SEED_USER_OPTIONS = [
-    {'name':'date_format', 'value':'%b %d, %Y', 'description':''},
-    {'name':'time_format', 'value':'%I:%M%p', 'description':''},
-    {'name':'timezone', 'value':'UTC', 'description':''},
-    {'name':'items_per_page', 'value':'10', 'description':''},
-    {'name':'comment_publish_delay', 'value':'120', 'description':''},
-    {'name':'comments_per_page', 'value':'10', 'description':''},
-    {'name':'comment_order', 'value':'desc', 'description':''},
-    {'name':'comments_blacklist', 'value':'', 'description':''},
-    {'name':'max_upload_mb', 'value':'5', 'description':''},
+    {'name': 'date_format', 'value': '%b %d, %Y', 'description': ''},
+    {'name': 'time_format', 'value': '%I:%M%p', 'description': ''},
+    {'name': 'timezone', 'value': 'UTC', 'description': ''},
+    {'name': 'items_per_page', 'value': '10', 'description': ''},
+    {'name': 'comment_publish_delay', 'value': '120', 'description': ''},
+    {'name': 'comments_per_page', 'value': '10', 'description': ''},
+    {'name': 'comment_order', 'value': 'desc', 'description': ''},
+    {'name': 'comments_blacklist', 'value': '', 'description': ''},
+    {'name': 'max_upload_mb', 'value': '5', 'description': ''},
 ]
 
 SEED_SYSTEM_OPTIONS = [
-    {'name':'site_name', 'value': 'Tktor', 'type': 1},
-    {'name':'site_description', 'value': 'Add description here', 'type': 1},
-    {'name':'site_icon', 'value': '', 'type': 1},
-    {'name':'site_url', 'value': 'localhost:8000', 'type': 1},
-    {'name':'admin_email', 'value': 'admin1@mail.com', 'type': 1},
-    {'name':'home_path', 'value': '/home', 'type': 1},
-    {'name':'users_can_register', 'value': True, 'type': 1},
-    {'name':'comment_status', 'value': 'pending', 'type': 1},
-    {'name':'comment_anonymous', 'value': False, 'type': 1},
-    {'name':'comment_threads', 'value': False, 'type': 1},
-    {'name':'comment_depth', 'value': 2, 'type': 1},
-    {'name':'show_avatars', 'value': True, 'type': 1},
-    {'name':'avatar_default_url', 'value': '', 'type': 1},
+    {'name': 'site_name', 'value': 'Tktor', 'type': 1},
+    {'name': 'site_description', 'value': 'Add description here', 'type': 1},
+    {'name': 'site_icon', 'value': '', 'type': 1},
+    {'name': 'site_url', 'value': 'localhost:8000', 'type': 1},
+    {'name': 'admin_email', 'value': 'admin1@mail.com', 'type': 1},
+    {'name': 'home_path', 'value': '/home', 'type': 1},
+    {'name': 'users_can_register', 'value': True, 'type': 1},
+    {'name': 'comment_status', 'value': 'pending', 'type': 1},
+    {'name': 'comment_anonymous', 'value': False, 'type': 1},
+    {'name': 'comment_threads', 'value': False, 'type': 1},
+    {'name': 'comment_depth', 'value': 2, 'type': 1},
+    {'name': 'show_avatars', 'value': True, 'type': 1},
+    {'name': 'avatar_default_url', 'value': '', 'type': 1},
 ]
-
 
 # SEED_TAXONOMY = {
 #     'system': [],
 #     'user': ['Work', 'Home']
 # }
+
+SEED_EXCHANGES = [
+    {'name': 'binance', 'display': 'Binance', 'website': 'https://www.binance.com'},
+    {'name': 'binance-us', 'display': 'BinanceUS', 'website': 'https://www.binance.us'},
+    {'name': 'coinsph', 'display': 'CoinsPH', 'website': 'https://coins.ph'},
+    {'name': 'coinbase', 'display': 'Coinbase', 'website': 'https://www.coinbase.com'},
+]
+
+SEED_SYMBOLS = {'BANANAUSDT', 'EPICUSDT', 'OMUSDT', 'SUSDT', 'ACHUSDT', 'OGUSDT', 'BNXUSDT', 'REDUSDT', 'ZROUSDT',
+                'MANAUSDT', 'EGLDUSDT', 'XLMUSDT', 'AVAXUSDT'}
+# SEED_SYMBOLS = {'EPICUSDT'}

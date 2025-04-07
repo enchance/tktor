@@ -17,7 +17,7 @@ class Order(OrderMod, SQLModel, table=True):
 
 
     def __repr__(self):
-        return modstr(self)
+        return modstr(self, 'symbol')
 
 
 class Trade(TradeMod, SQLModel, table=True):
@@ -46,8 +46,9 @@ class Exchange(ExchangeMod, SQLModel, table=True):
     wallets: list['Wallet'] = Relationship(back_populates='exchange')
     orders: list['Order'] = Relationship(back_populates='exchange')
     trades: list['Trade'] = Relationship(back_populates='exchange')
-    account: 'Account' = Relationship(back_populates='exchanges')
 
+
+    # account: 'Account' = Relationship(back_populates='exchanges')
 
     def __repr__(self):
         return modstr(self, 'name')

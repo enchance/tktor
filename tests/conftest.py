@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession
 from faker import Faker
 from slugify import slugify
+from dotenv import load_dotenv
 
 from main import app
 from core import ic  # noqa
@@ -14,6 +15,7 @@ from authentication import schemas
 from models.common_models import Taxonomy
 
 
+load_dotenv()
 fake = Faker()
 
 if TYPE_CHECKING:

@@ -5,31 +5,31 @@ x-base: &envbase
     - .env
 
 services:
-  app:
-    image: tktor-app:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: tktor
-    <<: *envbase
-    ports:
-      - "8000:8000"
-      - "8888:8888"
-    volumes:
-      - .:/app
-#      - ./dev/supervisor.conf:/app/supervisor.conf
-    develop:
-      watch:
-        - action: rebuild
-          path: Dockerfile.dev
-        - action: rebuild
-          path: requirements.txt
-    depends_on:
-      - pgdb
-      - redis
-#      - mailhog
-    command: ["fastapi", "dev", "--host", "0.0.0.0"]
-#    command: ["supervisord", "-c", "/app/dev/supervisor.conf"]
+#  app:
+#    image: tktor-app:latest
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.dev
+#    container_name: tktor
+#    <<: *envbase
+#    ports:
+#      - "8000:8000"
+#      - "8888:8888"
+#    volumes:
+#      - .:/app
+##      - ./dev/supervisor.conf:/app/supervisor.conf
+#    develop:
+#      watch:
+#        - action: rebuild
+#          path: Dockerfile.dev
+#        - action: rebuild
+#          path: requirements.txt
+#    depends_on:
+#      - pgdb
+#      - redis
+##      - mailhog
+#    command: ["fastapi", "dev", "--host", "0.0.0.0"]
+##    command: ["supervisord", "-c", "/app/dev/supervisor.conf"]
 
 
   pgdb:
@@ -68,11 +68,11 @@ services:
 #      - "1025:1025"
 #      - "8025:8025"
 
-#  jupyter:
-#    image: quay.io/jupyter/scipy-notebook:python-3.12
-#    container_name: jupyter
-#    ports:
-#      - "8888:8888"
+  jupyter:
+    image: quay.io/jupyter/scipy-notebook:python-3.12
+    container_name: jupyter
+    ports:
+      - "8888:8888"
 
 volumes:
   tktordb:
