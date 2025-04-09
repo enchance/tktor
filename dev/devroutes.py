@@ -65,19 +65,19 @@ async def seed(session: SessionDep) -> dict[str, int]:
         return dict_
 
 
-@devrouter.get('/fill')
-async def fetch_orders(session: SessionDep):
-    # await AppSeeder.seed_orders(session)
-    await AppSeeder.seed_trades(session=session)
+# @devrouter.get('/fill')
+# async def fetch_orders(session: SessionDep):
+#     await AppSeeder.seed_orders(session)
+#     await AppSeeder.seed_trades(session=session)
 
 
-@devrouter.get('/foo')
-async def foo(session: SessionDep):
-    stmt = select(Account)
-    exec_ = await session.exec(stmt)
-    accounts = exec_.all()
-    for i in accounts:
-        ic(i.model_dump())
+# @devrouter.get('/foo')
+# async def foo(session: SessionDep):
+#     stmt = select(Account)
+#     exec_ = await session.exec(stmt)
+#     accounts = exec_.all()
+#     for i in accounts:
+#         ic(i.model_dump())
 
 
 class AppSeeder:

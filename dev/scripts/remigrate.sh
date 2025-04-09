@@ -21,7 +21,7 @@ echo "[Seeding...]"
 curl localhost:8000/dev/seed \
     && echo "[Seeding complete]"
 
-## Postgres
-#echo "[Seeding sql...]"
-#docker exec -t $PG_CONTAINER psql -U vegeta -d vegeta -f /tmp/$SEEDERS_FILE \
-#    && echo "[SQL complete]"
+# Postgres
+echo "[Seeding sql...]"
+docker exec -t $PG_CONTAINER psql -U vegeta -d vegeta -f /tmp/$SEEDERS_FILE \
+    && echo "[SQL complete]"
