@@ -17,12 +17,6 @@ from core import InvalidToken, ic, ForbiddenException
 from models.auth_models import Profile
 
 
-if TYPE_CHECKING:
-    from models.common_models import Option
-
-    # from core.dependencies import validate_token
-    # from core.services import AccountSvc
-
 fake = Faker()
 
 fake_email = fake.email()

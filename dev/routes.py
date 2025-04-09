@@ -48,22 +48,28 @@ async def seed(session: SessionDep) -> dict[str, int]:
         account_count = await AppSeeder.generate_accounts(session)
         sys_options_count = await AppSeeder.generate_system_options(session)
         exchanges_count = await AppSeeder.seed_exchanges(session=session)
-        order_count = await AppSeeder.seed_orders(session)
-        trade_count = await AppSeeder.seed_trades(session=session)
+
+        # SQL populated
+        # order_count = await AppSeeder.seed_orders(session)
+        # trade_count = await AppSeeder.seed_trades(session=session)
 
         _cache_system_options()
         await _user_custom_permissions()
 
-        dict_ = dict(accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
-                     orders=order_count, trades=trade_count)
+        dict_ = dict(
+            accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
+            # orders=order_count,
+            # trades=trade_count
+        )
 
         return dict_
 
 
-# @devrouter.get('/fill')
-# async def fetch_orders(session: SessionDep):
-#     await AppSeeder.seed_orders(session)
-#     await AppSeeder.seed_trades(session=session)
+@devrouter.get('/fill')
+async def fetch_orders(session: SessionDep):
+    # await AppSeeder.seed_orders(session)
+    await AppSeeder.seed_trades(session=session)
+
 
 @devrouter.get('/foo')
 async def foo(session: SessionDep):
@@ -231,7 +237,7 @@ class AppSeeder:
             del dd['Index']
             dd['created_at'] = dd['created_at'].to_pydatetime().replace(tzinfo=pytz.utc)
             dd['updated_at'] = dd['updated_at'].to_pydatetime().replace(tzinfo=pytz.utc)
-            dd['exchange_orderid'] = str(dd['exchange_orderid'])
+            dd['id'] = f"{binance.prefix}_{dd['exchange_orderid']}"
             # dd['id'] = str(dd['id'])
             order = Order(**dd, exchange=binance, account=account)
             session.add(order)
@@ -261,16 +267,17 @@ class AppSeeder:
             tasks.append(client.get_my_trades(symbol=symbol))
         trades = await asyncio.gather(*tasks, return_exceptions=True)
 
-        stmt = select(Order).where(Order.symbol == symbol)
-        exec_ = await session.exec(stmt)
-        orderlist = exec_.all()
+        # stmt = select(Order)
+        # exec_ = await session.exec(stmt)
+        # orderlist = exec_.all()
 
         total = 0
         for i in trades:
             for t in i:
+                order_id = f"{binance.prefix}_{t['orderId']}"
                 trade = Trade(
-                    # exchange_orderid=str(t['orderId']),
-                    exchange_tradeid=str(t['id']),
+                    id=f"{binance.prefix}_{t['id']}",
+                    exchange_orderid=order_id,
                     price=t['price'],
                     symbol=t['symbol'],
                     commission=t['commission'],
@@ -280,15 +287,18 @@ class AppSeeder:
                     is_maker=t['isMaker'],
                     amount=t['qty'],
                     total=t['quoteQty'],
+                    exchange_id=binance.id,
+                    order_id=order_id,
+                    account_id=account.id,
                     created_at=dt.fromtimestamp(t['time'] / 1000, tz=pytz.utc),
-                    account=account,
-                    exchange=binance,
                 )
-                for order in orderlist:
-                    if order.exchange_orderid == str(t['orderId']):
-                        trade.order = order
-                        break
+                # for order in orderlist:
+                #     if order.id == trade.exchange_orderid:
+                #         trade.order_id = order.id
+                #         # ic(trade.model_dump())
+                #         break
 
+                # ic(trade.model_dump())
                 session.add(trade)
                 total += 1
 

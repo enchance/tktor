@@ -102,10 +102,10 @@ SEED_SYSTEM_OPTIONS = [
 # }
 
 SEED_EXCHANGES = [
-    {'name': 'binance', 'display': 'Binance', 'website': 'https://www.binance.com'},
-    {'name': 'binance-us', 'display': 'BinanceUS', 'website': 'https://www.binance.us'},
-    {'name': 'coinsph', 'display': 'CoinsPH', 'website': 'https://coins.ph'},
-    {'name': 'coinbase', 'display': 'Coinbase', 'website': 'https://www.coinbase.com'},
+    {'name': 'binance', 'prefix': 'bnc', 'display': 'Binance', 'website': 'https://www.binance.com'},
+    {'name': 'binanceus', 'prefix': 'bnus', 'display': 'BinanceUS', 'website': 'https://www.binance.us'},
+    {'name': 'coinsph', 'prefix': 'cph', 'display': 'CoinsPH', 'website': 'https://coins.ph'},
+    {'name': 'coinbase', 'prefix': 'cbs', 'display': 'Coinbase', 'website': 'https://www.coinbase.com'},
 ]
 
 SEED_SYMBOLS = {'BANANAUSDT', 'EPICUSDT', 'OMUSDT', 'SUSDT', 'ACHUSDT', 'OGUSDT', 'BNXUSDT', 'REDUSDT', 'ZROUSDT',

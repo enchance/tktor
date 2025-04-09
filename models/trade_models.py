@@ -8,8 +8,8 @@ from .common_models import IntPkMixin, DTMixin, UpdatedAtMixin
 
 
 class OrderMod(ABC):
-    id: int | None = Field(primary_key=True, nullable=False)
-    exchange_orderid: str = Field(max_length=199, nullable=False)
+    id: str = Field(primary_key=True, unique=True, nullable=False)
+    # exchange_orderid: str = Field(max_length=199, nullable=False)
     client_orderid: str = Field(max_length=199, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     amount: str = Field(max_length=199, nullable=False)
@@ -23,16 +23,15 @@ class OrderMod(ABC):
     type: str = Field(max_length=20, nullable=False)
     side: str = Field(max_length=20, nullable=False)
     iceberg_amount: str = Field(max_length=199, nullable=False)
-    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False, index=True)
+    exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE')
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
     updated_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
 
 
 class TradeMod(UpdatedAtMixin, ABC):
-    id: int | None = Field(primary_key=True, nullable=False)
-    # exchange_orderid: str = Field(max_length=199, nullable=False)
-    exchange_tradeid: str = Field(max_length=199, nullable=False)
+    id: str = Field(primary_key=True, unique=True, nullable=False)
+    exchange_orderid: str = Field(nullable=True)
     asset: str = Field(max_length=20, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     price: str = Field(max_length=199, nullable=False)
@@ -42,8 +41,8 @@ class TradeMod(UpdatedAtMixin, ABC):
     is_buyer: bool = Field(nullable=False)
     is_maker: bool = Field(nullable=False)
     is_best_match: bool = Field(nullable=False)
-    order_id: int | None = Field(max_length=199, foreign_key='xch_order.id', ondelete='CASCADE', default=None)
-    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', index=True)
+    order_id: str = Field(max_length=199, foreign_key='xch_order.id', ondelete='CASCADE')
+    exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE')
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
 
@@ -58,6 +57,7 @@ class WalletMod(DTMixin, IntPkMixin, ABC):
 
 class ExchangeMod(DTMixin, IntPkMixin, ABC):
     name: str = Field(max_length=199)
+    prefix: str = Field(max_length=199)
     display: str = Field(max_length=199)
     website: str = Field(max_length=199)
     description: str = Field(sa_column=Column(TEXT, default='', server_default=''))
