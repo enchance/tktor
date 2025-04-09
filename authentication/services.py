@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from core import NotFoundException, logger, ic
 from core.config import settings as s
 from authentication import Auth as auth_
-from models.auth_models import Ban
 from models.common_models import Option
 
 if TYPE_CHECKING:
@@ -148,7 +147,7 @@ class AccountSvc:
         :return:                Banned account
         """
         try:
-            ban = Ban(account_id=to_ban.id, implementor_id=authorization.id, notes=notes)
+            ban = auth_.Ban(account_id=to_ban.id, implementor_id=authorization.id, notes=notes)
             session.add(ban)
 
             stmt = update(auth_.Account).where(auth_.Account.id == to_ban.id).values(is_banned=True)  # noqa
@@ -173,9 +172,9 @@ class AccountSvc:
         :return:                Unbanned account
         """
         try:
-            stmt = (update(Ban)
-                    .where(Ban.account_id == to_ban.id, Ban.implementor_id == authorization.id,  # noqa
-                           Ban.is_active == True)  # noqa
+            stmt = (update(auth_.Ban)
+                    .where(auth_.Ban.account_id == to_ban.id, auth_.Ban.implementor_id == authorization.id,  # noqa
+                           auth_.Ban.is_active == True)  # noqa
                     .values(is_active=False))  # noqa
             await session.exec(stmt)  # noqa
 

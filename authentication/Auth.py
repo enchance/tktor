@@ -1,24 +1,36 @@
 from typing import TYPE_CHECKING, Union
-from sqlmodel import SQLModel, Relationship
+from datetime import datetime
+from sqlmodel import SQLModel, Relationship, Field, Text, Column, func, DateTime, String, text, Boolean
 from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from redis_om import NotFoundError, get_redis_connection
 
 from models import modstr
-from models.auth_models import Profile, AccountMod, Address, Ban, RoleMod
-from models.common_models import Option, Taxonomy
+from models.common_models import Option, Taxonomy, IntPkMixin, UpdatedAtMixin, DTMixin, MetaMixin
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
 from core.config import settings as s
 from authentication import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS
-from exchange import Order, Trade, Wallet, Exchange
+from exchange import Order, Trade, Wallet
 
 
 if TYPE_CHECKING:
     from . import RoleSvc
 
 
-class Account(AccountMod, SQLModel, table=True):
+class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'auth_account'
+    uid: str = Field(unique=True, nullable=True)
+    email: str = Field(max_length=199, unique=True)
+    username: str = Field(sa_column=Column(String(199), unique=True, nullable=True))
+    display: str = Field(sa_column=Column(String(199), default='', server_default=''))
+    avatar: str = Field(sa_column=Column(Text, default='', server_default=''))
+    roles: list[str] | None = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
+    custom_permissions: list[str] | None = Field(sa_column=Column(ARRAY(String), server_default='{}'),
+                                                 default_factory=list)
+    is_banned: bool = Field(default=False)
+    is_verified: bool = Field(default=False)
+
     profile: 'Profile' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
                                       cascade_delete=True)
     taxonomies: list['Taxonomy'] = Relationship(back_populates='account')
@@ -27,7 +39,8 @@ class Account(AccountMod, SQLModel, table=True):
     bans_received: list['Ban'] = Relationship(
         back_populates='account', sa_relationship_kwargs={'foreign_keys': '[Ban.account_id]'}, cascade_delete=True)
     bans_implemented: list['Ban'] = Relationship(
-        back_populates='implementor', sa_relationship_kwargs={'foreign_keys': '[Ban.implementor_id]'}, cascade_delete=True)
+        back_populates='implementor', sa_relationship_kwargs={'foreign_keys': '[Ban.implementor_id]'},
+        cascade_delete=True)
 
     orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
     trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
@@ -363,8 +376,31 @@ class Account(AccountMod, SQLModel, table=True):
         return
 
 
-class Role(RoleMod, SQLModel, table=True):
+class Profile(SQLModel, table=True):
+    __tablename__ = 'auth_profile'
+    id: int | None = Field(primary_key=True, foreign_key='auth_account.id', unique=True, ondelete='CASCADE')
+    firstname: str = Field(sa_column=Column(Text, default='', server_default=''))
+    middlename: str = Field(sa_column=Column(Text, default='', server_default=''))
+    lastname: str = Field(sa_column=Column(Text, default='', server_default=''))
+    mobile: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
+    telephone: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
+    gender: str = Field(sa_column=Column(String(50), default='', server_default=''))
+    meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    # --
+    account: 'Account' = Relationship(back_populates='profile')
+
+
+    @property
+    def fullname(self) -> str:
+        fullname = f'{self.firstname} {self.middlename} {self.lastname}'
+        return ' '.join(fullname.split())
+
+
+class Role(MetaMixin, DTMixin, SQLModel, table=True):
     __tablename__ = 'auth_role'
+    name: str = Field(max_length=20, primary_key=True)
+    permissions: set[str] = Field(default_factory=set, sa_column=Column(ARRAY(String(199)), server_default='{}'))
+    is_active: bool = Field(default=True, sa_column=Column(Boolean, index=True, server_default='TRUE'))
 
 
     def __repr__(self):
@@ -448,3 +484,33 @@ class Role(RoleMod, SQLModel, table=True):
             logger.error(dict(message=f'Failed to set cache for role {name}', uid=name))
             # ic(e)
             return False
+
+
+class Ban(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
+    __tablename__ = 'auth_ban'
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    implementor_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    notes: str = Field(sa_column=Column(Text, default='', server_default=''))
+    is_active: bool = Field(default=True)
+    banned_at: datetime | None = Field(
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=True))
+    # --
+    account: 'Account' = Relationship(
+        back_populates='bans_received', sa_relationship_kwargs={'foreign_keys': '[Ban.account_id]'})
+    implementor: 'Account' = Relationship(
+        back_populates='bans_implemented', sa_relationship_kwargs={'foreign_keys': '[Ban.implementor_id]'})
+
+
+    def __str__(self):
+        return modstr(self, 'account_id', 'is_active')
+
+
+class Address(IntPkMixin, DTMixin, SQLModel, table=True):
+    __tablename__ = 'auth_address'
+    address1: str = Field(max_length=199, default='')
+    address2: str = Field(max_length=199, default='')
+    city: str = Field(max_length=199, default='')
+    zip: str = Field(max_length=199, default='')
+    account_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    # --
+    account: 'Account' = Relationship(back_populates='addresses')

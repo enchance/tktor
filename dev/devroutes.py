@@ -12,11 +12,10 @@ from core import ic, SessionDep, Envs
 from core.config import settings as s
 from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
 from exchange import Exchange
-from models import auth_models as authmod
 from models.common_models import Option
 from exchange.Trades import Order, Trade
 from exchange import TradeSvc
-from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS
+from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS  # noqa
 
 
 load_dotenv()

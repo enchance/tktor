@@ -12,9 +12,9 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dev.data import SEED_ROLES
-from authentication import Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, Ban
+from authentication import (Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, Ban,
+                            Profile)
 from core import InvalidToken, ic, ForbiddenException
-from models.auth_models import Profile
 
 
 fake = Faker()

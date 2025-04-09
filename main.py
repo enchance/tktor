@@ -15,9 +15,8 @@ from dotenv import load_dotenv
 
 from core import ic
 from core.config import settings as s
-from authentication import Account
+from authentication import Account, Profile, Address
 from core import SessionDep
-from models.auth_models import Profile, Address
 from models.common_models import Option
 # from routes import accountrouter, authrouter
 from dev.devroutes import devrouter
