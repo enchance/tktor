@@ -1,4 +1,4 @@
-import os, secrets
+import os, secrets, arrow, json
 from faker import Faker
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -69,15 +69,17 @@ SEED_ACCOUNTS = {
 }
 
 SEED_USER_OPTIONS = [
-    {'name': 'date_format', 'value': '%b %d, %Y', 'description': ''},
-    {'name': 'time_format', 'value': '%I:%M%p', 'description': ''},
-    {'name': 'timezone', 'value': 'UTC', 'description': ''},
-    {'name': 'items_per_page', 'value': '10', 'description': ''},
-    {'name': 'comment_publish_delay', 'value': '120', 'description': ''},
-    {'name': 'comments_per_page', 'value': '10', 'description': ''},
-    {'name': 'comment_order', 'value': 'desc', 'description': ''},
-    {'name': 'comments_blacklist', 'value': '', 'description': ''},
+    {'name': 'date_format', 'value': '%b %d, %Y', 'description': 'Date format'},
+    {'name': 'time_format', 'value': '%I:%M%p', 'description': 'Time format'},
+    {'name': 'timezone', 'value': 'UTC', 'description': 'Account timezone'},
+    {'name': 'items_per_page', 'value': '10', 'description': 'Items to show per page'},
+    {'name': 'comment_publish_delay', 'value': '120', 'description': 'Delay in seconds before publishing a comment'},
+    {'name': 'comments_per_page', 'value': '10', 'description': 'Number of comments to show per page'},
+    {'name': 'comment_order', 'value': 'desc', 'description': 'Ordering of comments'},
+    # {'name': 'comments_blacklist', 'value': '', 'description': ''},
     {'name': 'max_upload_mb', 'value': '5', 'description': ''},
+    {'name': 'pointer_all_orders', 'value': '0', 'description': 'Date to start fetching all orders'},
+    {'name': 'pointer_all_trades', 'value': '0', 'description': 'Date to start fetching all trades'},
 ]
 
 SEED_SYSTEM_OPTIONS = [

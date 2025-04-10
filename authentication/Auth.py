@@ -279,9 +279,9 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
             ic(e)
 
 
-    def update_cache(self, data: dict) -> bool:
+    def _update_cache(self, data: dict) -> bool:
         """
-        Update the account cache based on data.
+        Update the account cache based on data. Don't call this directly use `update_options`.
         :param data:    Keys to update
         :return:
         """
@@ -303,7 +303,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
             options = self.options
             for key, val in data.items():
                 setattr(options, key, val)
-            self.update_cache({'options': options.model_dump()})
+            self._update_cache({'options': options.model_dump()})
             return True
 
 
@@ -340,7 +340,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
         if banned_account := await svc.AccountSvc.ban_user(authorization=authorization, to_ban=to_ban, notes=notes,
                                                            session=session):
-            banned_account.update_cache(dict(is_banned=True))
+            banned_account._update_cache(dict(is_banned=True))
             logger.info(msg=f'Ban account {banned_account.uid} by {authorization.uid}', id=banned_account.uid)
             return banned_account
         return
@@ -370,7 +370,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
             raise ForbiddenException('CANNOT_UNBAN_YOURSELF')
 
         if account := await svc.AccountSvc.unban_user(authorization=authorization, to_ban=to_unban, session=session):
-            account.update_cache(dict(is_banned=False))
+            account._update_cache(dict(is_banned=False))
             logger.info(msg=f'Unban account {account.uid} by {authorization.uid}', id=account.uid)
             return account
         return

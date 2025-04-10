@@ -88,8 +88,10 @@ class UserOptions(BaseModel):
     comment_publish_delay: int
     comments_per_page: int
     comment_order: str
-    comments_blacklist: set[str]
+    # comments_blacklist: set[str]
     max_upload_mb: int
+    pointer_all_orders: int
+    pointer_all_trades: int
 
 
     # @field_validator('default_role', mode='before')
@@ -98,13 +100,13 @@ class UserOptions(BaseModel):
     #         return map(lambda x: x.strip(), str(val).split(','))
     #     return val
 
-    @field_validator('comments_blacklist', mode='before')
-    def transform_comments_blacklist(cls, val):
-        if isinstance(val, str):
-            if setdata := map(lambda x: x.strip(), str(val).split(',')):
-                cleaned = filter(None, setdata)
-                return cleaned
-        return val
+    # @field_validator('comments_blacklist', mode='before')
+    # def transform_comments_blacklist(cls, val):
+    #     if isinstance(val, str):
+    #         if setdata := map(lambda x: x.strip(), str(val).split(',')):
+    #             cleaned = filter(None, setdata)
+    #             return cleaned
+    #     return val
 
 
 # TESTME: Untested

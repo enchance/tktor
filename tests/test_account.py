@@ -321,7 +321,7 @@ class TestAccount:
         cache = Account.get_cache(account_.uid)
         assert cache.username != new_username
 
-        assert account_.update_cache({'username': new_username})
+        assert account_._update_cache({'username': new_username})
         cache = Account.get_cache(account_.uid)
         assert cache.username == new_username
 
