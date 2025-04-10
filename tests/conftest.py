@@ -131,12 +131,24 @@ def bearer_token() -> str:
 
 @pytest.fixture
 def make_taxonomy(session):
-    async def func(*, name: str, account: 'Account', parent: ['Account', None] = None) -> 'Taxonomy':
-        tax = Taxonomy(name=name, slug=slugify(name), account=account, parent=parent)  # noqa
+    async def func(*, name: str, account: 'Account', slug: str = '', parent: ['Account', None] = None) -> 'Taxonomy':
+        tax = Taxonomy(name=name, slug=slug, account=account, parent=parent)
         session.add(tax)
         await session.commit()
-        await session.refresh(tax, ['parent', 'children'])
+        # await session.refresh(tax, ['children'])
         return tax
 
 
     return func
+
+
+@pytest.fixture
+async def taxonomy_(session, account_, make_taxonomy):
+    parent = await make_taxonomy(name=f'{fake.first_name()} {fake.last_name()}', account=account_)
+    child = await make_taxonomy(name=f'{fake.first_name()} {fake.last_name()}', account=account_, parent=parent)
+    return child
+    # schemas.AccountCache.delete(parent.uid)
+    # schemas.AccountCache.delete(child.uid)
+    # await session.delete(parent)
+    # await session.delete(child)
+    # await session.commit()

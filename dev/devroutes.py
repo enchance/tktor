@@ -48,16 +48,15 @@ async def seed(session: SessionDep) -> dict[str, int]:
         exchanges_count = await AppSeeder.seed_exchanges(session=session)
 
         # SQL populated
-        # order_count = await AppSeeder.seed_orders(session)
-        # trade_count = await AppSeeder.seed_trades(session=session)
+        order_count = await AppSeeder.seed_orders(session)
+        trade_count = await AppSeeder.seed_trades(session=session)
 
         _cache_system_options()
         await _user_custom_permissions()
 
         dict_ = dict(
             accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
-            # orders=order_count,
-            # trades=trade_count
+            orders=order_count, trades=trade_count
         )
 
         return dict_

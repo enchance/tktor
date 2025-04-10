@@ -32,7 +32,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
     profile: 'Profile' = Relationship(back_populates='account', sa_relationship_kwargs={'uselist': False},
                                       cascade_delete=True)
-    taxonomies: list['Taxonomy'] = Relationship(back_populates='account')
+    taxonomies: list['Taxonomy'] = Relationship(back_populates='account', cascade_delete=True)
     options_rel: list['Option'] = Relationship(back_populates='account', cascade_delete=True)
     addresses: list['Address'] = Relationship(back_populates='account', cascade_delete=True)
     bans_received: list['Ban'] = Relationship(
@@ -46,7 +46,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
     wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
 
 
-    def __repr__(self):
+    def __str__(self):
         return modstr(self, 'email')
 
 
@@ -389,6 +389,10 @@ class Profile(SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='profile')
 
 
+    def __str__(self):
+        return modstr(self)
+
+
     @property
     def fullname(self) -> str:
         fullname = f'{self.firstname} {self.middlename} {self.lastname}'
@@ -402,7 +406,7 @@ class Role(MetaMixin, DTMixin, SQLModel, table=True):
     is_active: bool = Field(default=True, sa_column=Column(Boolean, index=True, server_default='TRUE'))
 
 
-    def __repr__(self):
+    def __str__(self):
         return modstr(self, 'name')
 
 
@@ -513,3 +517,7 @@ class Address(IntPkMixin, DTMixin, SQLModel, table=True):
     account_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     # --
     account: 'Account' = Relationship(back_populates='addresses')
+
+
+    def __str__(self):
+        return modstr(self)

@@ -38,7 +38,7 @@ class Order(SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='orders')
 
 
-    def __repr__(self):
+    def __str__(self):
         return modstr(self, 'symbol')
 
 
@@ -65,8 +65,8 @@ class Trade(UpdatedAtMixin, SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='trades')
 
 
-    def __repr__(self):
-        return modstr(self, 'symbol', 'exchange_tradeid')
+    def __str__(self):
+        return modstr(self, 'symbol')
 
 
 class Wallet(DTMixin, IntPkMixin, SQLModel, table=True):
@@ -81,7 +81,7 @@ class Wallet(DTMixin, IntPkMixin, SQLModel, table=True):
     account: 'Account' = Relationship(back_populates='wallets')
 
 
-    def __repr__(self):
+    def __str__(self):
         return modstr(self, 'asset')
 
 
@@ -100,5 +100,5 @@ class Exchange(DTMixin, IntPkMixin, SQLModel, table=True):
     trades: list['Trade'] = Relationship(back_populates='exchange')
 
 
-    def __repr__(self):
+    def __str__(self):
         return modstr(self, 'name')

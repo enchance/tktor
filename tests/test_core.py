@@ -1,15 +1,19 @@
 from pytest import mark
 from collections import Counter
 from faker import Faker
+from sqlmodel import select
 
 from core import ic, utils
+from core.models import Taxonomy
+from authentication import Role, Account
+from exchange import Exchange
 
 
 fake = Faker()
 
 
 class TestCore:
-    pass
+
     # # @mark.focus
     # @mark.parametrize('datastr', [
     #     'foo, bar, baz',
@@ -21,24 +25,29 @@ class TestCore:
     #     assert foo.default_role == {'foo', 'bar', 'baz'}
     #     assert isinstance(foo.default_role, set)
 
-
     # @mark.focus
     async def test_taxonomy(self, session, account_, make_taxonomy):
-        foo = await make_taxonomy(name='foo the one', account=account_)
-        bar = await make_taxonomy(name='bar the two', account=account_, parent=foo)
+        parent = await make_taxonomy(name='Foo the one!', account=account_)
+        child = await make_taxonomy(name='Bar the two//', account=account_, parent=parent)
+        baz = await make_taxonomy(name='Baz the three\\', slug='bt3', account=account_)
+        boom = await make_taxonomy(name='Boom the four', slug='', account=account_)
 
-        assert not foo.parent
-        assert foo.children == [bar]
-        assert foo.slug == 'foo-the-one'
+        assert parent.slug == 'foo-the-one'
+        assert child.slug == 'bar-the-two'
+        assert baz.slug == 'bt3'
+        assert boom.slug == 'boom-the-four'
 
-        assert bar.parent == foo
-        assert bar.parent_id == foo.id
-        assert bar.slug == 'bar-the-two'
+        await session.refresh(parent, ['children'])
+        assert not parent.parent
+        assert parent.children == [child]
+        await parent.add_child(boom, session=session)
+        assert parent.children == [child, boom]
+
+        assert child.parent == parent
+        assert child.parent_id == parent.id
 
         # Clean
-        await session.delete(foo)
-        await session.delete(bar)
-        await session.commit()
+        # Not needed since account_ cleans after itself
 
 
 class TestUtils:
@@ -54,7 +63,6 @@ class TestUtils:
     # def test_refactor_permissions(self, ll, result):
     #     assert Counter(utils.reduce_permissions(ll)) == Counter(result)
 
-
     # @mark.focus
     @mark.parametrize('val, out', [('Hey You', ('Hey', 'You')), ('Sir Hey You', ('Sir Hey', 'You')),
                                    ('Sir Hey You Phd', ('Sir Hey', 'You Phd')), ('Hey delos You', ('Hey', 'delos You')),
@@ -62,12 +70,16 @@ class TestUtils:
     def test_split_fullname(self, val, out):
         assert utils.split_fullname(val) == out  # type: ignore
 
-    # # @mark.focus
-    # async def test_modstr(self, account_, taxonomy_, session):
-    #     assert utils.modstr(account_) == f'<Account: {account_.id}>'
-    #     assert utils.modstr(account_, 'email', 'display') == f'<Account {account_.id}: {account_.email}, {account_.display}>'
-    #     assert utils.modstr(taxonomy_, 'name') == f'<Taxonomy {taxonomy_.id}: {taxonomy_.name}>'
-    #
-    #     await session.delete(account_)
-    #     await session.delete(taxonomy_)
-    #     await session.commit()
+
+    # @mark.focus
+    async def test_modstr(self, account_, taxonomy_, session):
+        assert str(account_) == f'<Account {account_.id}: {account_.email}>'
+        assert utils.modstr(account_) == f'<Account: {account_.id}>'
+
+        assert str(taxonomy_) == f'<Taxonomy {taxonomy_.id}: {taxonomy_.name}>'
+        assert (utils.modstr(taxonomy_, 'name', 'slug')
+                == (f'<Taxonomy {taxonomy_.id}: {taxonomy_.name}, {taxonomy_.slug}>'))
+
+        # Clean
+        # Not needed since account_ cleans after itself
+
