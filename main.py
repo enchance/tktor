@@ -17,7 +17,7 @@ from core import ic
 from core.config import settings as s
 from authentication import Account, Profile, Address
 from core import SessionDep
-from models.common_models import Option
+from core.models import Option
 # from routes import accountrouter, authrouter
 from dev.devroutes import devrouter
 from tests.routes import testrouter

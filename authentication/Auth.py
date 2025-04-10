@@ -5,9 +5,8 @@ from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from redis_om import NotFoundError, get_redis_connection
 
-from models import modstr
-from models.common_models import Option, Taxonomy, IntPkMixin, UpdatedAtMixin, DTMixin, MetaMixin
-from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException
+from core.models import Option, Taxonomy, IntPkMixin, UpdatedAtMixin, DTMixin, MetaMixin
+from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException, modstr
 from core.config import settings as s
 from authentication import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS

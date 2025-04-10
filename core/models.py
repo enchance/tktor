@@ -4,6 +4,8 @@ from sqlmodel import SQLModel, Column, Field, DateTime, func, TEXT, Relationship
 from sqlalchemy.orm import declared_attr
 from pydantic.fields import PrivateAttr
 
+from .utils import modstr
+
 
 nowtz = text('CURRENT_TIMESTAMP')
 
@@ -46,26 +48,24 @@ class MetaMixin:
         self._is_cache = value
 
 
-class TaxonomyMod(IntPkMixin, DTMixin, ABC):
+class Taxonomy(IntPkMixin, DTMixin, SQLModel, table=True):
+    __tablename__ = 'app_taxonomy'
+    __table_args__ = (UniqueConstraint('name', 'parent_id', 'account_id'),)
     name: str = Field(max_length=199)
     slug: str = Field(max_length=199)
     parent_id: int | None = Field(default=None, foreign_key='app_taxonomy.id')
     type: str = Field(default='category', index=True)
     is_active: bool = Field(default=True)
     account_id: int | None = Field(default=None, foreign_key='auth_account.id', ondelete='CASCADE')
-
-
-class Taxonomy(TaxonomyMod, SQLModel, table=True):
-    __tablename__ = 'app_taxonomy'
-    __table_args__ = (UniqueConstraint('name', 'parent_id', 'account_id'),)
+    # --
     parent: 'Taxonomy' = Relationship(back_populates='children',
-                                         sa_relationship_kwargs={'remote_side': '[Taxonomy.id]'})
+                                      sa_relationship_kwargs={'remote_side': '[Taxonomy.id]'})
     children: list['Taxonomy'] = Relationship(back_populates='parent')
     account: 'Account' = Relationship(back_populates='taxonomies')  # noqa
 
 
     def __repr__(self) -> str:
-        return f'<Taxonomy {self.id}: {self.name}>'
+        return modstr(self, 'name')
 
 
 class Option(IntPkMixin, DTMixin, SQLModel, table=True):
@@ -82,4 +82,4 @@ class Option(IntPkMixin, DTMixin, SQLModel, table=True):
 
 
     def __repr__(self) -> str:
-        return f'<Option {self.id}: {self.name}>'  # noqa
+        return modstr(self, 'name')

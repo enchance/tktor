@@ -1,7 +1,7 @@
-from sqlmodel import update, select
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from models.common_models import Option
+from core.models import Option
 
 
 class OptionsSvc:

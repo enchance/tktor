@@ -4,7 +4,6 @@ import pandas as pd
 from fastapi import APIRouter
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
-from redis_om import get_redis_connection
 from binance import AsyncClient
 from dotenv import load_dotenv
 
@@ -12,7 +11,7 @@ from core import ic, SessionDep, Envs
 from core.config import settings as s
 from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
 from exchange import Exchange
-from models.common_models import Option
+from core.models import Option
 from exchange.Trades import Order, Trade
 from exchange import TradeSvc
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS  # noqa

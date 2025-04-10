@@ -1,5 +1,5 @@
 import os, random, httpx, pytest
-from typing import Callable, Awaitable, TYPE_CHECKING, Union
+from typing import Callable, Awaitable, TYPE_CHECKING
 from secrets import token_hex
 from redis_om import get_redis_connection
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -12,7 +12,7 @@ from main import app
 from core import ic  # noqa
 from authentication import Auth as auth
 from authentication import schemas
-from models.common_models import Taxonomy
+from core.models import Taxonomy
 
 
 load_dotenv()

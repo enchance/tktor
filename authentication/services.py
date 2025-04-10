@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Union
-from sqlmodel import update, select, func
+from sqlmodel import update, select
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from core import NotFoundException, logger, ic
+from core import NotFoundException, logger
 from core.config import settings as s
 from authentication import Auth as auth_
-from models.common_models import Option
+from core.models import Option
 
 if TYPE_CHECKING:
     from authentication import Account, Role

@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
-from sqlmodel import SQLModel, Relationship, UniqueConstraint, Field, Column, DateTime, TEXT, text
+from sqlmodel import SQLModel, Relationship, Field, Column, DateTime, TEXT, text
 from sqlalchemy.dialects.postgresql import JSONB
 
-from models import modstr
-from models.common_models import UpdatedAtMixin, DTMixin, IntPkMixin
+from core import modstr
+from core.models import UpdatedAtMixin, DTMixin, IntPkMixin
 
 
 if TYPE_CHECKING:
