@@ -45,7 +45,7 @@ class Order(SQLModel, table=True):
 class Trade(UpdatedAtMixin, SQLModel, table=True):
     __tablename__ = 'xch_trade'
     id: str = Field(primary_key=True, unique=True, nullable=False)
-    exchange_orderid: str = Field(nullable=True)
+    # exchange_orderid: str = Field(nullable=True)
     asset: str = Field(max_length=20, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     price: str = Field(max_length=199, nullable=False)

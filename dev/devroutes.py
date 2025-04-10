@@ -274,7 +274,7 @@ class AppSeeder:
                 order_id = f"{binance.prefix}_{t['orderId']}"
                 trade = Trade(
                     id=f"{binance.prefix}_{t['id']}",
-                    exchange_orderid=order_id,
+                    # exchange_orderid=order_id,
                     price=t['price'],
                     symbol=t['symbol'],
                     commission=t['commission'],
