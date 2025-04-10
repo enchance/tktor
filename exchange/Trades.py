@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
-from sqlmodel import SQLModel, Relationship, Field, Column, DateTime, TEXT, text
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String
 from sqlalchemy.dialects.postgresql import JSONB
 
 from core import modstr
@@ -14,32 +16,41 @@ if TYPE_CHECKING:
 class Order(SQLModel, table=True):
     __tablename__ = 'xch_order'
     id: str = Field(primary_key=True, unique=True, nullable=False)
-    # exchange_orderid: str = Field(max_length=199, nullable=False)
-    client_orderid: str = Field(max_length=199, nullable=False)
-    symbol: str = Field(max_length=20, nullable=False)
-    amount: str = Field(max_length=199, nullable=False)
-    quote_amount: str = Field(max_length=199, nullable=False)
-    executed_amount: str = Field(max_length=199, nullable=False)
-    cum_quote_amount: str = Field(max_length=199, nullable=False)
-    stop_limit: str = Field(max_length=199, nullable=False)
-    stop_price: str = Field(max_length=199, nullable=False)
-    status: str = Field(max_length=199, nullable=False)
-    time_in_force: str = Field(max_length=10, nullable=False)
-    type: str = Field(max_length=20, nullable=False)
-    side: str = Field(max_length=20, nullable=False)
-    iceberg_amount: str = Field(max_length=199, nullable=False)
-    exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE')
+    client_orderid: str | None = Field(sa_column=Col(String(199), default=None, server_default=None))
+    symbol: str = Field(sa_column=Col(String(20), nullable=False))
+    amount: str | None = Field(sa_column=Col(String(199), default=None, server_default=None))
+    quote_amount: str | None = Field(sa_column=Col(String(199), default=None, server_default=None))
+    executed_amount: str | None = Field(sa_column=Col(String(199), default=None, server_default=None))
+    cum_quote_amount: str | None = Field(sa_column=Col(String(199), default=None, server_default=None))
+    stop_limit: str | None = Field(sa_column=Col(String(20), default=None, server_default=None))
+    stop_price: str | None = Field(sa_column=Col(String(20), default=None, server_default=None))
+    status: str | None = Field(sa_column=Col(String(50), default=None, server_default=None))
+    time_in_force: str | None = Field(sa_column=Col(String(20), default=None, server_default=None))
+    type: str | None = Field(sa_column=Col(String(20), default=None, server_default=None))
+    side: str = Field(sa_column=Col(String(20), nullable=False))
+    iceberg_amount: str | None = Field(sa_column=Col(String(199), default='0.00000000', server_default='0.00000000'))
+    exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
-    updated_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
-    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
-
+    updated_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))
+    created_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))  # time
+    # --
     exchange: 'Exchange' = Relationship(back_populates='orders')
     trades: list['Trade'] = Relationship(back_populates='order')
     account: 'Account' = Relationship(back_populates='orders')
 
 
     def __str__(self):
-        return modstr(self, 'symbol')
+        return modstr(self, 'symbol', 'status')
+
+
+    # PLACEHOLDER: To follow
+    async def get_all(self, orderids: list[str], account: 'Account', *, session: AsyncSession):
+        pass
+
+
+    # PLACEHOLDER: To follow
+    async def add_all(self, orderids: list[str], account: 'Account', *, session: AsyncSession):
+        pass
 
 
 class Trade(UpdatedAtMixin, SQLModel, table=True):
@@ -58,8 +69,8 @@ class Trade(UpdatedAtMixin, SQLModel, table=True):
     order_id: str = Field(max_length=199, foreign_key='xch_order.id', ondelete='CASCADE')
     exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE')
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))  # time
-
+    created_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))  # time
+    # --
     order: 'Order' = Relationship(back_populates='trades')
     exchange: 'Exchange' = Relationship(back_populates='trades')
     account: 'Account' = Relationship(back_populates='trades')
@@ -69,12 +80,21 @@ class Trade(UpdatedAtMixin, SQLModel, table=True):
         return modstr(self, 'symbol')
 
 
+    # PLACEHOLDER: To follow
+    async def add_all(self, trades_dict: list[dict], account: 'Account', *, session: AsyncSession):
+        ll = []
+        for trade in trades_dict:
+            pass
+
+        # Verify order_ids
+
+
 class Wallet(DTMixin, IntPkMixin, SQLModel, table=True):
     __tablename__ = 'xch_wallet'
     asset: str = Field(max_length=20, index=True)
     amount: str = Field(max_length=199)
     exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE', nullable=False)
-    meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    meta: dict = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
 
     exchange: 'Exchange' = Relationship(back_populates='wallets')
@@ -90,10 +110,10 @@ class Exchange(DTMixin, IntPkMixin, SQLModel, table=True):
     name: str = Field(max_length=199)
     prefix: str = Field(max_length=199)
     display: str = Field(max_length=199)
-    website: str = Field(max_length=199)
-    description: str = Field(sa_column=Column(TEXT, default='', server_default=''))
+    base_url: str = Field(max_length=199)
+    description: str = Field(sa_column=Col(TEXT, default='', server_default=''))
     # account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-    meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    meta: dict = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
 
     wallets: list['Wallet'] = Relationship(back_populates='exchange')
     orders: list['Order'] = Relationship(back_populates='exchange')

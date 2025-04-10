@@ -13,7 +13,7 @@ from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role,
 from exchange import Exchange
 from core.models import Option
 from exchange.Trades import Order, Trade
-from exchange import TradeSvc
+from exchange import ExchangeSvc
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS  # noqa
 
 
@@ -214,7 +214,7 @@ class AppSeeder:
             return 0
 
         account = await AccountSvc.get_by_email(os.getenv('DEV_EMAIL_ADMIN'), session=session)
-        binance = await TradeSvc.get_exchange('binance', session=session)
+        binance = await ExchangeSvc.get_exchange('binance', session=session)
         client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
 
         tasks = []
@@ -255,7 +255,7 @@ class AppSeeder:
             return 0
 
         account = await AccountSvc.get_by_email(os.getenv('DEV_EMAIL_ADMIN'), session=session)
-        binance = await TradeSvc.get_exchange('binance', session=session)
+        binance = await ExchangeSvc.get_exchange('binance', session=session)
         client = await AsyncClient.create(BINANCE_KEY, BINANCE_SECRET)
 
         tasks = []

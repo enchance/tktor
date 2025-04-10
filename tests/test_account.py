@@ -249,7 +249,7 @@ class TestAccount:
         assert accountdb.display == new_display
 
 
-    @mark.focus
+    # @mark.focus
     def test_collate_permissions(self, account_):
         ll = []
         for role in account_.roles:
