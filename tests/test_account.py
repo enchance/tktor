@@ -1,4 +1,4 @@
-import pytest, os
+import pytest, os, arrow
 from typing import TYPE_CHECKING
 from pytest import mark
 from unittest import mock
@@ -12,7 +12,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from dev.data import SEED_ROLES
-from authentication import (Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, Opt, RoleCache, Ban,
+from authentication import (Account, validate_token, AccountSvc, AccountCache, Can, UserOptions, RoleCache, Ban,
                             Profile)
 from core import InvalidToken, ic, ForbiddenException
 
@@ -173,7 +173,7 @@ class TestAccount:
 
     # @mark.focus
     async def test_get_account(self, session, account_):
-        account1 = await Account.get(uid=account_.uid, session=session)
+        account1 = await Account.get(account_.uid, session=session)
         assert account1.is_cache
 
         cache = AccountCache.get(account_.uid)
@@ -184,9 +184,9 @@ class TestAccount:
         with pytest.raises(NotFoundError):
             AccountCache.get(account_.uid)
 
-        account2 = await Account.get(uid=account_.uid, session=session)
-        account3 = await Account.get(uid=account_.uid, session=session)
-        account4 = await Account.get(uid=account_.uid, use_db=True, session=session)
+        account2 = await Account.get(account_.uid, session=session)
+        account3 = await Account.get(account_.uid, session=session)
+        account4 = await Account.get(account_.uid, use_db=True, session=session)
         assert not account2.is_cache
         assert account3.is_cache
         assert not account4.is_cache
@@ -198,24 +198,40 @@ class TestAccount:
         assert isinstance(options, UserOptions)
 
 
-    # @mark.focus
+    @mark.focus
     async def test_update_options(self, account_, session):
         new_int = 2345
-        account = await Account.get(uid=account_.uid, session=session)
-        accountdb = await Account.get(uid=account_.uid, use_db=True, session=session)
+        account = await Account.get(account_.uid, session=session)
+        accountdb = await Account.get(account_.uid, use_db=True, session=session)
         assert account.is_cache
         assert not accountdb.is_cache
         assert account.options.items_per_page != new_int
         assert accountdb.options.items_per_page != new_int
 
-        await account.update_options({Opt.items_per_page.name: new_int}, session=session)
-
-        account = await Account.get(uid=account_.uid, session=session)
-        accountdb = await Account.get(uid=account_.uid, use_db=True, session=session)
+        await account.update_options({'items_per_page': new_int}, session=session)
+        account = await Account.get(account_.uid, session=session)
+        accountdb = await Account.get(account_.uid, use_db=True, session=session)
         assert account.is_cache
         assert not accountdb.is_cache
         assert account.options.items_per_page == new_int
         assert accountdb.options.items_per_page == new_int
+
+        prev_timestamp = account.options.pointer_all_orders['next']
+        next_timestamp = arrow.utcnow().int_timestamp + 1
+        await account.update_options({
+            'pointer_all_orders': {
+                'prev': prev_timestamp,
+                'next': next_timestamp,
+            }
+        }, session=session)
+        account = await Account.get(account_.uid, session=session)
+        accountdb = await Account.get(account_.uid, use_db=True, session=session)
+        assert account.is_cache
+        assert not accountdb.is_cache
+        assert account.options.pointer_all_orders['prev'] == prev_timestamp
+        assert account.options.pointer_all_orders['next'] == next_timestamp
+        assert accountdb.options.pointer_all_orders['prev'] == prev_timestamp
+        assert accountdb.options.pointer_all_orders['next'] == next_timestamp
 
 
     # @mark.focus
@@ -232,8 +248,8 @@ class TestAccount:
     async def test_update_db(self, account_, session):
         new_display = 'foobar'
 
-        account = await Account.get(uid=account_.uid, session=session)
-        accountdb = await Account.get(uid=account_.uid, use_db=True, session=session)
+        account = await Account.get(account_.uid, session=session)
+        accountdb = await Account.get(account_.uid, use_db=True, session=session)
         assert account.is_cache
         assert not accountdb.is_cache
         assert account.display != new_display
@@ -241,8 +257,8 @@ class TestAccount:
 
         await AccountSvc.update(account_.uid, {'display': new_display}, session=session)
 
-        account = await Account.get(uid=account_.uid, session=session)
-        accountdb = await Account.get(uid=account_.uid, use_db=True, session=session)
+        account = await Account.get(account_.uid, session=session)
+        accountdb = await Account.get(account_.uid, use_db=True, session=session)
         assert account.is_cache
         assert not accountdb.is_cache
         assert account.display != new_display  # cache stays the same
@@ -313,7 +329,7 @@ class TestAccount:
 
     # @mark.focus
     async def test_update_cache(self, account_, session):
-        account = await Account.get(uid=account_.uid, session=session)
+        account = await Account.get(account_.uid, session=session)
         assert account.is_cache
 
         new_username = 'foobar'

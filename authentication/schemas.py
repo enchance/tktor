@@ -1,6 +1,8 @@
+import json
 from typing import Union, TYPE_CHECKING
+from typing_extensions import Self
 from datetime import datetime
-from pydantic import model_validator, BaseModel, field_validator, Field as PydanticField
+from pydantic import model_validator, BaseModel, field_validator, Field as PydanticField, ModelWrapValidatorHandler
 from redis_om import JsonModel, Field
 
 from core import ic, logger
@@ -90,8 +92,8 @@ class UserOptions(BaseModel):
     comment_order: str
     # comments_blacklist: set[str]
     max_upload_mb: int
-    pointer_all_orders: int
-    pointer_all_trades: int
+    pointer_all_orders: dict[str, int]
+    pointer_all_trades: dict[str, int]
 
 
     # @field_validator('default_role', mode='before')
@@ -107,6 +109,21 @@ class UserOptions(BaseModel):
     #             cleaned = filter(None, setdata)
     #             return cleaned
     #     return val
+
+    @field_validator('pointer_all_orders', mode='before')
+    @classmethod
+    def parse_pointer_orders(cls, val):
+        if isinstance(val, str):
+            return json.loads(val)
+        return val
+
+
+    @field_validator('pointer_all_trades', mode='before')
+    @classmethod
+    def parse_pointer_trades(cls, val):
+        if isinstance(val, str):
+            return json.loads(val)
+        return val
 
 
 # TESTME: Untested

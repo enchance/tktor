@@ -1,4 +1,4 @@
-import os, asyncio, pytz
+import os, asyncio, pytz, arrow, time
 from datetime import datetime as dt
 import pandas as pd
 from fastapi import APIRouter
@@ -48,8 +48,9 @@ async def seed(session: SessionDep) -> dict[str, int]:
         exchanges_count = await AppSeeder.seed_exchanges(session=session)
 
         # SQL populated
-        order_count = await AppSeeder.seed_orders(session)
-        trade_count = await AppSeeder.seed_trades(session=session)
+        start_time = arrow.get('2025-04').int_timestamp * 1000
+        order_count = await AppSeeder.seed_orders(start_time, session)
+        trade_count = await AppSeeder.seed_trades(start_time, session=session)
 
         _cache_system_options()
         await _user_custom_permissions()
@@ -58,6 +59,9 @@ async def seed(session: SessionDep) -> dict[str, int]:
             accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
             orders=order_count, trades=trade_count
         )
+
+        # account = await Account.get('enchance@gmail.com', session=session)
+        # ic(account.options, account.options.pointer_all_orders)
 
         return dict_
 
@@ -68,13 +72,15 @@ async def seed(session: SessionDep) -> dict[str, int]:
 #     await AppSeeder.seed_trades(session=session)
 
 
-# @devrouter.get('/foo')
-# async def foo(session: SessionDep):
-#     stmt = select(Account)
-#     exec_ = await session.exec(stmt)
-#     accounts = exec_.all()
-#     for i in accounts:
-#         ic(i.model_dump())
+@devrouter.get('/foo')
+async def foo(session: SessionDep):
+    account = await Account.get('enchance@gmail.com', session=session)
+    ic(account.options)
+    # stmt = select(Account)
+    # exec_ = await session.exec(stmt)
+    # accounts = exec_.all()
+    # for i in accounts:
+    #     ic(i.model_dump())
 
 
 class AppSeeder:
@@ -183,11 +189,10 @@ class AppSeeder:
 
 
     @staticmethod
-    async def seed_orders(session: AsyncSession):
+    async def seed_orders(start_time: int, session: AsyncSession):
         def _clean_orders(df_: pd.DataFrame):
             df_['time'] = pd.to_datetime(df_['time'], unit='ms')
             df_['updateTime'] = pd.to_datetime(df_['updateTime'], unit='ms')
-            df_['workingTime'] = pd.to_datetime(df_['workingTime'], unit='ms')
             df_ = df_.drop(columns=['workingTime', 'selfTradePreventionMode', 'isWorking', 'orderListId'])
             df_ = df_.rename(columns={
                 'orderId': 'exchange_orderid',
@@ -206,6 +211,9 @@ class AppSeeder:
             return df_
 
 
+        # account = await AccountSvc.get_by_email('enchance@gmail.com', session=session)
+        # start_time = int(arrow.get(account.options.pointer_all_orders).int_timestamp * 1000)
+
         # Current
         stmt = select(Order.id)
         exec_ = await session.exec(stmt)
@@ -219,7 +227,7 @@ class AppSeeder:
 
         tasks = []
         for symbol in SEED_SYMBOLS:
-            tasks.append(client.get_all_orders(symbol=symbol))
+            tasks.append(client.get_all_orders(symbol=symbol, startTime=start_time))
         results = await asyncio.gather(*tasks)
 
         fulldf = pd.DataFrame()
@@ -242,11 +250,17 @@ class AppSeeder:
 
         if session.new:
             await session.commit()
+            await account.update_options({
+                'pointer_all_orders': {
+                    'prev': start_time,
+                    'next': int(arrow.utcnow().int_timestamp * 1000) + 1
+                }
+            }, session=session)
         return total
 
 
     @staticmethod
-    async def seed_trades(session: AsyncSession):
+    async def seed_trades(start_time: int, session: AsyncSession):
         # Current
         stmt = select(Trade.id)
         exec_ = await session.exec(stmt)
@@ -261,7 +275,7 @@ class AppSeeder:
         tasks = []
         # symbol = 'BANANAUSDT'
         for symbol in SEED_SYMBOLS:
-            tasks.append(client.get_my_trades(symbol=symbol))
+            tasks.append(client.get_my_trades(symbol=symbol, startTime=start_time))
         trades = await asyncio.gather(*tasks, return_exceptions=True)
 
         # stmt = select(Order)
@@ -301,6 +315,12 @@ class AppSeeder:
 
         if session.new:
             await session.commit()
+            await account.update_options({
+                'pointer_all_trades': {
+                    'prev': start_time,
+                    'next': int(arrow.utcnow().int_timestamp * 1000) + 1
+                }
+            }, session=session)
         return total
 
 

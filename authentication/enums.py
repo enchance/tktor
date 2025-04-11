@@ -2,33 +2,35 @@ from __future__ import annotations
 from enum import StrEnum, auto
 
 
-# Update triggers.sql
-class Opt(StrEnum):
-    # System
-    site_name = auto()
-    site_description = auto()
-    site_icon = auto()
-    site_url = auto()
-    admin_email = auto()
-    home_path = auto()
-    users_can_register = auto()
-    comment_status = auto()
-    comment_anonymous = auto()
-    comment_threads = auto()
-    comment_depth = auto()
-    show_avatars = auto()
-    avatar_default_url = auto()
-
-    # User
-    date_format = auto()
-    time_format = auto()
-    timezone = auto()
-    items_per_page = auto()
-    comment_publish_delay = auto()
-    comments_per_page = auto()
-    comment_order = auto()
-    comments_blacklist = auto()
-    max_upload_mb = auto()
+# # Update triggers.sql
+# class Opt(StrEnum):
+#     # System
+#     site_name = auto()
+#     site_description = auto()
+#     site_icon = auto()
+#     site_url = auto()
+#     admin_email = auto()
+#     home_path = auto()
+#     users_can_register = auto()
+#     comment_status = auto()
+#     comment_anonymous = auto()
+#     comment_threads = auto()
+#     comment_depth = auto()
+#     show_avatars = auto()
+#     avatar_default_url = auto()
+#
+#     # User
+#     date_format = auto()
+#     time_format = auto()
+#     timezone = auto()
+#     items_per_page = auto()
+#     comment_publish_delay = auto()
+#     comments_per_page = auto()
+#     comment_order = auto()
+#     # comments_blacklist = auto()
+#     max_upload_mb = auto()
+#     pointer_all_orders = auto()
+#     pointer_all_trades = auto()
 
 
 class SysOps(StrEnum):

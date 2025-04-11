@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String
+from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String, SMALLINT
 from sqlalchemy.dialects.postgresql import JSONB
 
 from core import modstr
@@ -112,8 +112,10 @@ class Exchange(DTMixin, IntPkMixin, SQLModel, table=True):
     display: str = Field(max_length=199)
     base_url: str = Field(max_length=199)
     description: str = Field(sa_column=Col(TEXT, default='', server_default=''))
-    # account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    logo: str = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    rating: int | None = Field(sa_column=Col(SMALLINT, default=None, server_default=None))
     meta: dict = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    is_active: bool = Field(default=True)
 
     wallets: list['Wallet'] = Relationship(back_populates='exchange')
     orders: list['Order'] = Relationship(back_populates='exchange')

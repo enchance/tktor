@@ -25,7 +25,8 @@ dependencies = [
     "python-binance (>=1.0.28,<2.0.0)",
     "pyperclip (>=1.9.0,<2.0.0)",
     "sqlalchemy[asyncio] (>=2.0.40,<3.0.0)",
-    "sqlmodel (>=0.0.24,<0.0.25)"
+    "sqlmodel (>=0.0.24,<0.0.25)",
+    "email-validator (>=2.2.0,<3.0.0)"
 ]
 
 [tool.poetry.group.dev.dependencies]

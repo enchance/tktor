@@ -68,6 +68,7 @@ SEED_ACCOUNTS = {
     ],
 }
 
+starting_pointer = json.dumps({'next': 0, 'prev': 0})
 SEED_USER_OPTIONS = [
     {'name': 'date_format', 'value': '%b %d, %Y', 'description': 'Date format'},
     {'name': 'time_format', 'value': '%I:%M%p', 'description': 'Time format'},
@@ -78,8 +79,8 @@ SEED_USER_OPTIONS = [
     {'name': 'comment_order', 'value': 'desc', 'description': 'Ordering of comments'},
     # {'name': 'comments_blacklist', 'value': '', 'description': ''},
     {'name': 'max_upload_mb', 'value': '5', 'description': ''},
-    {'name': 'pointer_all_orders', 'value': '0', 'description': 'Date to start fetching all orders'},
-    {'name': 'pointer_all_trades', 'value': '0', 'description': 'Date to start fetching all trades'},
+    {'name': 'pointer_all_orders', 'value': starting_pointer, 'description': 'Date to start fetching all orders'},
+    {'name': 'pointer_all_trades', 'value': starting_pointer, 'description': 'Date to start fetching all trades'},
 ]
 
 SEED_SYSTEM_OPTIONS = [
@@ -103,11 +104,18 @@ SEED_SYSTEM_OPTIONS = [
 #     'user': ['Work', 'Home']
 # }
 
+logo = {'logo': {
+    'tiny': '',
+    'main': '',
+}}
 SEED_EXCHANGES = [
-    {'name': 'binance', 'prefix': 'bnc', 'display': 'Binance', 'website': 'https://www.binance.com'},
-    {'name': 'binanceus', 'prefix': 'bnus', 'display': 'BinanceUS', 'website': 'https://www.binance.us'},
-    {'name': 'coinsph', 'prefix': 'cph', 'display': 'CoinsPH', 'website': 'https://coins.ph'},
-    {'name': 'coinbase', 'prefix': 'cbs', 'display': 'Coinbase', 'website': 'https://www.coinbase.com'},
+    {'name': 'binance', 'prefix': 'bin', 'display': 'Binance', 'website': 'https://www.binance.com', **logo,
+     'base_url': 'https://api.binance.com'},
+    {'name': 'binanceus', 'prefix': 'binus', 'display': 'BinanceUS', 'website': 'https://www.binance.us', **logo,
+     'base_url': ''},
+    {'name': 'coinsph', 'prefix': 'cph', 'display': 'CoinsPH', 'website': 'https://coins.ph', **logo, 'base_url': ''},
+    {'name': 'coinbase', 'prefix': 'cbs', 'display': 'Coinbase', 'website': 'https://www.coinbase.com', **logo,
+     'base_url': ''},
 ]
 
 SEED_SYMBOLS = {'BANANAUSDT', 'EPICUSDT', 'OMUSDT', 'SUSDT', 'ACHUSDT', 'OGUSDT', 'BNXUSDT', 'REDUSDT', 'ZROUSDT',

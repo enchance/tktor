@@ -4,6 +4,8 @@ from sqlmodel import SQLModel, Relationship, Field, Text, Column, func, DateTime
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from redis_om import NotFoundError, get_redis_connection
+from pydantic import validate_email
+from pydantic_core import PydanticCustomError
 
 from core.models import Option, Taxonomy, IntPkMixin, UpdatedAtMixin, DTMixin, MetaMixin
 from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc, ForbiddenException, modstr
@@ -134,12 +136,12 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
 
     @classmethod
-    async def get(cls, uid: str, *, use_db: bool = False,
-                  session: AsyncSession) -> Union['Account', None]:
+    async def _get(cls, *, uid: str = '', email: str = '', use_db: bool = False, session: AsyncSession):
         """
         Return an instance of an account. Checks the cache before querying the db.
         If cache is empty then it hits the db and resaves it to cache for future queries.
         :param uid:             Account.uid
+        :param email:           Account.email
         :param use_db:          Get from db directly skipping cache
         :param session:         AsyncSession
         :return:                Account
@@ -153,11 +155,16 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
 
         async def _fetch_account():
-            if account := await svc.AccountSvc.get_by_uid(uid, session=session):
+            if uid:
+                account_ = await svc.AccountSvc.get_by_uid(uid, session=session)
+            else:
+                account_ = await svc.AccountSvc.get_by_email(email, session=session)
+
+            if account_:
                 if s.USE_CACHE:
-                    await _recache_account(account)
-                account.is_cache = False
-                return account
+                    await _recache_account(account_)
+                account_.is_cache = False
+                return account_
             raise NotFoundException('ACCOUNT_NOT_FOUND')
 
 
@@ -183,6 +190,24 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
         except Exception as e:
             logger.error(dict(message=str(e), id=uid, ))
             raise AppException('ACCOUNT_RETRIEVAL_FAILED')
+
+
+    @classmethod
+    async def get(cls, identifier: str, *, use_db: bool = False,
+                  session: AsyncSession) -> Union['Account', None]:
+        """
+        Return an instance of an account. Checks the cache before querying the db.
+        If cache is empty then it hits the db and resaves it to cache for future queries.
+        :param identifier:  Email or uid
+        :param use_db:      Get from db directly skipping cache
+        :param session:     AsyncSession
+        :return:            Account
+        """
+        try:
+            _ = validate_email(identifier)
+            return await cls._get(email=identifier, use_db=use_db, session=session)
+        except PydanticCustomError:
+            return await cls._get(uid=identifier, use_db=use_db, session=session)
 
 
     @classmethod
