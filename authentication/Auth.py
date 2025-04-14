@@ -194,21 +194,21 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
 
     @classmethod
-    async def get(cls, identifier: str, *, use_db: bool = False,
+    async def get(cls, ident: str, *, use_db: bool = False,
                   session: AsyncSession) -> Union['Account', None]:
         """
         Return an instance of an account. Checks the cache before querying the db.
         If cache is empty then it hits the db and resaves it to cache for future queries.
-        :param identifier:  Email or uid
+        :param ident:       Email or uid
         :param use_db:      Get from db directly skipping cache
         :param session:     AsyncSession
         :return:            Account
         """
         try:
-            _ = validate_email(identifier)
-            return await cls._get(email=identifier, use_db=use_db, session=session)
+            _ = validate_email(ident)
+            return await cls._get(email=ident, use_db=use_db, session=session)
         except PydanticCustomError:
-            return await cls._get(uid=identifier, use_db=use_db, session=session)
+            return await cls._get(uid=ident, use_db=use_db, session=session)
 
 
     @classmethod
@@ -306,7 +306,8 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
     def _update_cache(self, data: dict) -> bool:
         """
-        Update the account cache based on data. Don't call this directly use `update_options`.
+        Update the account cache based on data.
+        Don't call this directly use `update_options`.
         :param data:    Keys to update
         :return:
         """
@@ -411,7 +412,7 @@ class Profile(SQLModel, table=True):
     telephone: list[str] = Field(sa_column=Column(ARRAY(String), server_default='{}'), default_factory=list)
     gender: str = Field(sa_column=Column(String(50), default='', server_default=''))
     meta: dict = Field(sa_column=Column(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
-    # --
+
     account: 'Account' = Relationship(back_populates='profile')
 
 
@@ -523,7 +524,7 @@ class Ban(IntPkMixin, UpdatedAtMixin, SQLModel, table=True):
     is_active: bool = Field(default=True)
     banned_at: datetime | None = Field(
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=True))
-    # --
+
     account: 'Account' = Relationship(
         back_populates='bans_received', sa_relationship_kwargs={'foreign_keys': '[Ban.account_id]'})
     implementor: 'Account' = Relationship(
@@ -541,7 +542,7 @@ class Address(IntPkMixin, DTMixin, SQLModel, table=True):
     city: str = Field(max_length=199, default='')
     zip: str = Field(max_length=199, default='')
     account_id: int | None = Field(foreign_key='auth_account.id', ondelete='CASCADE')
-    # --
+
     account: 'Account' = Relationship(back_populates='addresses')
 
 

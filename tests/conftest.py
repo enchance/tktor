@@ -182,3 +182,12 @@ async def exchange_fetcher(session: AsyncSession):
     coinsph = await ExchangeSvc.get_exchange('coinsph', session=session)
     coinbase = await ExchangeSvc.get_exchange('coinbase', session=session)
     return binance, coinsph, coinbase
+
+
+@pytest.fixture
+async def account_fetcher(session: AsyncSession):
+    superadmin = await Account.get(os.getenv('DEV_EMAIL_SUPERADMIN'), session=session)
+    admin = await Account.get(os.getenv('DEV_EMAIL_ADMIN'), session=session)
+    mod = await Account.get(os.getenv('DEV_EMAIL_MODERATOR'), session=session)
+    user = await Account.get(os.getenv('DEV_EMAIL_USER'), session=session)
+    return superadmin, admin, mod, user

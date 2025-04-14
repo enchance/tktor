@@ -95,6 +95,7 @@ class UserOptions(BaseModel):
     pointer_all_orders: dict[str, int]
     pointer_all_trades: dict[str, int]
 
+    # TODO: Clean this up and use a single int instead of json
 
     # @field_validator('default_role', mode='before')
     # def transform_default_role(cls, val):
