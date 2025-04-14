@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
-
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String, SMALLINT, \
     UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 
-from core import modstr
+from core import modstr, LitActiveAll
 from core.models import UpdatedAtMixin, DTMixin, IntPkMixin
 from exchange import services
 
@@ -148,7 +147,6 @@ class APIKeys(DTMixin, IntPkMixin, SQLModel, table=True):
 
 
     @staticmethod
-    async def get(account: 'Account', ident: str | int | None = None, *, only_active: bool | None = True,
+    async def get(account: 'Account', ident: str | int | None = None, *, active: LitActiveAll = 'ACTIVE',
                   session: AsyncSession, **kwargs) -> list['APIKeys']:
-        return await services.ExchangeSvc.get_apikeys(account, ident, only_active=only_active,
-                                                      session=session, **kwargs)
+        return await services.ExchangeSvc.get_apikeys(account, ident, active=active, session=session, **kwargs)

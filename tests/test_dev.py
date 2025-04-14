@@ -15,6 +15,27 @@ fake = Faker()
 
 
 class TestDev:
+    # @classmethod
+    # def setup_class(cls):
+    #     ic(f'[SETUP_CLASS]: {cls.__name__}')
+    #
+    #
+    # @classmethod
+    # def teardown_class(cls):
+    #     ic(f'[TEARING_CLASS]: {cls.__name__}')
+    #
+    #
+    # def setup_method(self, method):
+    #     ic(f'[SETUP_METHOD]: {method.__name__}')
+    #
+    #
+    # def teardown_method(self, method):
+    #     ic(f'[TEARING_METHOD]: {method.__name__}')
+    #
+    # @mark.dev
+    # async def test_aaa(self):
+    #     pass
+
     @mark.dev
     async def test_dev(self, session):
         try:
@@ -27,7 +48,6 @@ class TestDev:
             # foo = arrow.get(1660801715793)
             # ic(type(foo), foo)
 
-
             # x = {'comment_order': 'desc',
             #      'comment_publish_delay': '120',
             #      'comments_blacklist': '',
@@ -39,7 +59,6 @@ class TestDev:
             #      'timezone': 'UTC'}
             # x = UserOptions(**x)
             # ic(x)
-
 
             # stmt = select(Account.is_verified).where(Account.uid == os.getenv('DEV_UID_ADMINx'))  # noqa
             # exec_ = await session.exec(stmt)

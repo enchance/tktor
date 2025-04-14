@@ -1,7 +1,29 @@
+from typing import Literal, LiteralString, reveal_type, TypedDict, Union
 from fastapi import APIRouter
+from enum import StrEnum, auto
 
 from core import SessionDep
-from .seeder import devrouter
+from .seeder import devrouter  # noqa
+
+
+class EFoo(StrEnum):
+    aaa = auto()
+    bbb = auto()
+    ccc = auto()
+
+
+LitFoo = Literal['aaa', 'bbb']
+
+
+# LitFoo = Literal[EFoo.aaa, EFoo.bbb]
+
+
+def func(x: LitFoo, y: LiteralString):
+    pass
+
+
+i = 1
+func('aaa', f'bar1')
 
 
 @devrouter.get('/')
@@ -25,4 +47,4 @@ async def foo(session: SessionDep):
     # accounts = exec_.all()
     # for i in accounts:
     #     ic(i.model_dump())
-    pass
+    return True

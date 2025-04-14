@@ -1,5 +1,9 @@
 from __future__ import annotations
 from enum import StrEnum, IntEnum, auto
+from typing import Literal
+
+
+LitActiveAll = Literal['ACTIVE', 'INACTIVE', 'ALL']
 
 
 class Envs(StrEnum):
