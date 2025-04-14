@@ -100,44 +100,44 @@ async def healthz(request: Request):
     return Response(status_code=200)
 
 
-@app.get('/foo')
-async def foo(request: Request, session: SessionDep):
-    account = Account(
-        email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
-        profile=Profile(firstname='haha', mobile=['123', '456']),
-        addresses=[
-            Address(),
-            Address(),
-        ],
-        options_rel=[
-            Option(name='foo', value='bar')
-        ]
-    )
-    session.add(account)
-    await session.commit()
-    await session.refresh(account)
-    ic(type(account), account)
-
-    stmt = select(Account).where(Account.email == 'aaa@aaa.com') \
-        .options(selectinload(Account.profile), selectinload(Account.bans_received), selectinload(Account.addresses),
-                 selectinload(Account.options_rel))
-    exec_ = await session.exec(stmt)
-    account = exec_.one_or_none()
-
-    # opts = OptionMod(name='hey', value='you', account=account)
-    # account.options_rel.append(opts)
-    # session.add(account)
-    # await session.commit()
-    # await session.refresh(account)
-
-    # await session.refresh(account, attribute_names=['profile'])
-    # account.profile.firstname = 'boo'
-    # session.add(account.profile)
-    # await session.commit()
-    # profile: ProfileMod = account.profile
-    ic(account.bans_received, account.profile.firstname, account.addresses, account.options_rel)
-
-    # profile = await session.get(ProfileMod, 5)
-    # ic(profile.account)
-
-    return True
+# @app.get('/foo')
+# async def foo(request: Request, session: SessionDep):
+#     account = Account(
+#         email='aaa@aaa.com', username='aaa', display='aaa', avatar='', uid='anoeutsiht',
+#         profile=Profile(firstname='haha', mobile=['123', '456']),
+#         addresses=[
+#             Address(),
+#             Address(),
+#         ],
+#         options_rel=[
+#             Option(name='foo', value='bar')
+#         ]
+#     )
+#     session.add(account)
+#     await session.commit()
+#     await session.refresh(account)
+#     ic(type(account), account)
+#
+#     stmt = select(Account).where(Account.email == 'aaa@aaa.com') \
+#         .options(selectinload(Account.profile), selectinload(Account.bans_received), selectinload(Account.addresses),
+#                  selectinload(Account.options_rel))
+#     exec_ = await session.exec(stmt)
+#     account = exec_.one_or_none()
+#
+#     # opts = OptionMod(name='hey', value='you', account=account)
+#     # account.options_rel.append(opts)
+#     # session.add(account)
+#     # await session.commit()
+#     # await session.refresh(account)
+#
+#     # await session.refresh(account, attribute_names=['profile'])
+#     # account.profile.firstname = 'boo'
+#     # session.add(account.profile)
+#     # await session.commit()
+#     # profile: ProfileMod = account.profile
+#     ic(account.bans_received, account.profile.firstname, account.addresses, account.options_rel)
+#
+#     # profile = await session.get(ProfileMod, 5)
+#     # ic(profile.account)
+#
+#     return True

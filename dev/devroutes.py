@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 from core import ic, SessionDep, Envs
 from core.config import settings as s
 from authentication import RoleCache, SystemOptionsCache, AccountSvc, Can, Role, Account
-from exchange import Exchange
+from exchange import Exchange, APIKeys
 from core.models import Option
-from exchange.Trades import Order, Trade
+from exchange.Trades import Order, Trade, APIKeys
 from exchange import ExchangeSvc
 from .data import SEED_ROLES, SEED_ACCOUNTS, SEED_SYSTEM_OPTIONS, SEED_EXCHANGES, SEED_SYMBOLS  # noqa
 
@@ -47,8 +47,8 @@ async def seed(session: SessionDep) -> dict[str, int]:
         sys_options_count = await AppSeeder.generate_system_options(session)
         exchanges_count = await AppSeeder.seed_exchanges(session=session)
 
-        # SQL populated
         start_time = arrow.get('2025-04').int_timestamp * 1000
+        apikeys_count = await AppSeeder.seed_apikeys(session=session)
         order_count = await AppSeeder.seed_orders(start_time, session)
         trade_count = await AppSeeder.seed_trades(start_time, session=session)
 
@@ -57,11 +57,8 @@ async def seed(session: SessionDep) -> dict[str, int]:
 
         dict_ = dict(
             accounts=account_count, roles=roles_count, options=sys_options_count, exchanges=exchanges_count,
-            orders=order_count, trades=trade_count
+            orders=order_count, trades=trade_count, apikeys=apikeys_count,
         )
-
-        # account = await Account.get('enchance@gmail.com', session=session)
-        # ic(account.options, account.options.pointer_all_orders)
 
         return dict_
 
@@ -70,17 +67,6 @@ async def seed(session: SessionDep) -> dict[str, int]:
 # async def fetch_orders(session: SessionDep):
 #     await AppSeeder.seed_orders(session)
 #     await AppSeeder.seed_trades(session=session)
-
-
-@devrouter.get('/foo')
-async def foo(session: SessionDep):
-    account = await Account.get('enchance@gmail.com', session=session)
-    ic(account.options)
-    # stmt = select(Account)
-    # exec_ = await session.exec(stmt)
-    # accounts = exec_.all()
-    # for i in accounts:
-    #     ic(i.model_dump())
 
 
 class AppSeeder:
@@ -211,9 +197,6 @@ class AppSeeder:
             return df_
 
 
-        # account = await AccountSvc.get_by_email('enchance@gmail.com', session=session)
-        # start_time = int(arrow.get(account.options.pointer_all_orders).int_timestamp * 1000)
-
         # Current
         stmt = select(Order.id)
         exec_ = await session.exec(stmt)
@@ -338,3 +321,57 @@ class AppSeeder:
             # ll.append(i['asset'])
         # ic(len(ll), len(set(ll)))
         ic(dict_)
+
+
+    @staticmethod
+    async def seed_apikeys(session: SessionDep) -> int:
+        api_key = os.getenv('BINANCE_KEY')
+        api_secret = os.getenv('BINANCE_SECRET')
+
+        account = await AccountSvc.get_by_email(os.getenv('DEV_EMAIL_ADMIN'), session=session)
+        binance = await ExchangeSvc.get_exchange('binance', session=session)
+        coinsph = await ExchangeSvc.get_exchange('coinsph', session=session)
+
+        # Current
+        stmt = select(APIKeys)
+        exec_ = await session.exec(stmt)
+        if _ := exec_.all():
+            return 0
+
+        binance_apikeys1 = APIKeys(name=binance.name, apikeys={'KEY': api_key, 'SECRET': api_secret},  # noqa
+                                   account_id=account.id, exchange_id=binance.id)
+        binance_apikeys2 = APIKeys(name=binance.name, apikeys={'KEY': 'foo', 'SECRET': 'bar'},  # noqa
+                                   account_id=account.id, exchange_id=binance.id)
+        coinsph_apikeys = APIKeys(name=coinsph.name, apikeys={'KEY': 'this', 'SECRET': 'that'},  # noqa
+                                  account_id=account.id, exchange_id=coinsph.id)
+        session.add(binance_apikeys1)
+        session.add(binance_apikeys2)
+        session.add(coinsph_apikeys)
+        await session.commit()
+        total = 3
+
+        return total
+
+
+@devrouter.get('/')
+async def foo(session: SessionDep):
+    # item = Item(foo=Foo.BAR, fooint=FooInt.BAR)
+    # session.add(item)
+    # await session.commit()
+    # await session.refresh(item)
+    # ic(item)
+
+    # exec_ = await session.exec(select(Item).where(Item.foo == 'bar'))
+    # # exec_ = await session.exec(select(Item).where(Item.foo == 1))
+    # item = exec_.one_or_none()
+    # # ic(type(item), item)
+    # ic(type(item.foo), item.foo)
+
+    # account = await Account.get('enchance@gmail.com', session=session)
+    # ic(account.options)
+    # stmt = select(Account)
+    # exec_ = await session.exec(stmt)
+    # accounts = exec_.all()
+    # for i in accounts:
+    #     ic(i.model_dump())
+    pass

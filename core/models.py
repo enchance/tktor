@@ -1,11 +1,9 @@
 from abc import ABC
 from uuid import UUID, uuid4
 from slugify import slugify
-
-from markdown_it.common.entities import entities
 from sqlmodel import SQLModel, Column, Field, DateTime, func, TEXT, Relationship, UniqueConstraint, text, Integer
+from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.orm import declared_attr
-from sqlalchemy.ext.asyncio.session import AsyncSession
 from pydantic.fields import PrivateAttr
 
 from .utils import modstr

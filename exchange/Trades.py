@@ -1,12 +1,14 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String, SMALLINT
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import SQLModel, Relationship, Field, Column as Col, DateTime, TEXT, text, String, SMALLINT, \
+    UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 
 from core import modstr
 from core.models import UpdatedAtMixin, DTMixin, IntPkMixin
+from exchange import services
 
 
 if TYPE_CHECKING:
@@ -117,10 +119,37 @@ class Exchange(DTMixin, IntPkMixin, SQLModel, table=True):
     meta: dict = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
     is_active: bool = Field(default=True)
 
-    wallets: list['Wallet'] = Relationship(back_populates='exchange')
-    orders: list['Order'] = Relationship(back_populates='exchange')
-    trades: list['Trade'] = Relationship(back_populates='exchange')
+    wallets: list['Wallet'] = Relationship(back_populates='exchange', cascade_delete=True)
+    orders: list['Order'] = Relationship(back_populates='exchange', cascade_delete=True)
+    trades: list['Trade'] = Relationship(back_populates='exchange', cascade_delete=True)
+    apikeys: list['APIKeys'] = Relationship(back_populates='exchange', cascade_delete=True)
 
 
     def __str__(self):
         return modstr(self, 'name')
+
+
+class APIKeys(DTMixin, IntPkMixin, SQLModel, table=True):
+    __tablename__ = 'xch_apikeys'
+    __table_args__ = (
+        UniqueConstraint('name', 'apikeys', name='unique_keys'),
+    )
+    name: str = Field(max_length=191)
+    apikeys: dict = Field(sa_column=Col(JSONB, server_default=text("'{}'::jsonb")), default_factory=dict)
+    is_active: bool = Field(default=True, index=True)
+    account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
+    exchange_id: int = Field(foreign_key='xch_exchange.id', ondelete='CASCADE')
+
+    exchange: 'Exchange' = Relationship(back_populates='apikeys')
+    account: 'Account' = Relationship(back_populates='apikeys')
+
+
+    def __str__(self):
+        return modstr(self, 'name', data=list(self.apikeys.keys()))
+
+
+    @staticmethod
+    async def get(account: 'Account', ident: str | int | None = None, *, only_active: bool | None = True,
+                  session: AsyncSession, **kwargs) -> list['APIKeys']:
+        return await services.ExchangeSvc.get_apikeys(account, ident, only_active=only_active,
+                                                      session=session, **kwargs)

@@ -198,7 +198,7 @@ class TestAccount:
         assert isinstance(options, UserOptions)
 
 
-    @mark.focus
+    # @mark.focus
     async def test_update_options(self, account_, session):
         new_int = 2345
         account = await Account.get(account_.uid, session=session)

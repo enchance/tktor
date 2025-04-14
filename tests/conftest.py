@@ -1,4 +1,5 @@
-import os, random, httpx, pytest
+import os, random, httpx, pytest, asyncio
+from secrets import token_hex
 from typing import Callable, Awaitable, TYPE_CHECKING
 from secrets import token_hex
 from redis_om import get_redis_connection
@@ -10,9 +11,11 @@ from dotenv import load_dotenv
 
 from main import app
 from core import ic  # noqa
-from authentication import Auth as auth
+from authentication import Auth as auth, AccountSvc
 from authentication import schemas
 from core.models import Taxonomy
+from exchange import APIKeys
+from exchange.services import ExchangeSvc
 
 
 load_dotenv()
@@ -20,6 +23,7 @@ fake = Faker()
 
 if TYPE_CHECKING:
     from authentication import Account, Role
+    from exchange import Exchange
 
 
 @pytest.fixture
@@ -152,3 +156,29 @@ async def taxonomy_(session, account_, make_taxonomy):
     # await session.delete(parent)
     # await session.delete(child)
     # await session.commit()
+
+
+@pytest.fixture
+async def make_apikeys(session, account_):
+    async def func(exchanges: list['Exchange']) -> tuple:
+        ll = []
+        for idx, val in enumerate(exchanges):
+            is_active = idx != len(exchanges) - 1
+            apikeys = APIKeys(name=val.name, apikeys={'KEY': token_hex(12), 'SECRET': token_hex(12)},
+                              account_id=account_.id, exchange_id=val.id, is_active=is_active)
+            ll.append(apikeys)
+            session.add(apikeys)
+        await session.commit()
+
+        return account_, *ll
+
+
+    return func
+
+
+@pytest.fixture
+async def exchange_fetcher(session: AsyncSession):
+    binance = await ExchangeSvc.get_exchange('binance', session=session)
+    coinsph = await ExchangeSvc.get_exchange('coinsph', session=session)
+    coinbase = await ExchangeSvc.get_exchange('coinbase', session=session)
+    return binance, coinsph, coinbase

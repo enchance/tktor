@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Union
 from datetime import datetime
 from sqlmodel import SQLModel, Relationship, Field, Text, Column, func, DateTime, String, text, Boolean
-from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from redis_om import NotFoundError, get_redis_connection
 from pydantic import validate_email
@@ -12,7 +12,7 @@ from core import NotFoundException, AppException, logger, utils, ic, OptionsSvc,
 from core.config import settings as s
 from authentication import enums, schemas, services as svc
 from dev.data import SEED_USER_OPTIONS
-from exchange import Order, Trade, Wallet
+from exchange import Order, Trade, Wallet, APIKeys
 
 
 if TYPE_CHECKING:
@@ -46,6 +46,7 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
     orders: list['Order'] = Relationship(back_populates='account', cascade_delete=True)
     trades: list['Trade'] = Relationship(back_populates='account', cascade_delete=True)
     wallets: list['Wallet'] = Relationship(back_populates='account', cascade_delete=True)
+    apikeys: list['APIKeys'] = Relationship(back_populates='account', cascade_delete=True)
 
 
     def __str__(self):

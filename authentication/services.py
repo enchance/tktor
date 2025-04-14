@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Union
 from sqlmodel import update, select
-from sqlalchemy.ext.asyncio.session import AsyncSession
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from core import NotFoundException, logger
 from core.config import settings as s
@@ -21,7 +21,10 @@ class RoleSvc:
         :param session:     AsyncSession
         :return:            Role
         """
-        return await session.get(auth_.Role, name)
+        try:
+            return await session.get(auth_.Role, name)
+        except Exception:
+            raise
 
 
 class AccountSvc:
@@ -73,11 +76,14 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:
         """
-        stmt = select(Option.name, Option.value).where(Option.account_id == id_)  # noqa
-        exec_ = await session.exec(stmt)
-        if data := exec_.all():
-            return dict(data)
-        return {}
+        try:
+            stmt = select(Option.name, Option.value).where(Option.account_id == id_)  # noqa
+            exec_ = await session.exec(stmt)
+            if data := exec_.all():
+                return dict(data)
+            return {}
+        except Exception as _:
+            raise
 
 
     @staticmethod
@@ -89,12 +95,15 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:            bool
         """
-        if not to_save:
-            return False
-        stmt = update(auth_.Account).where(auth_.Account.uid == uid).values(**to_save)  # noqa
-        await session.exec(stmt)
-        await session.commit()
-        return True
+        try:
+            if not to_save:
+                return False
+            stmt = update(auth_.Account).where(auth_.Account.uid == uid).values(**to_save)  # noqa
+            await session.exec(stmt)
+            await session.commit()
+            return True
+        except Exception as _:
+            raise
 
 
     @staticmethod
@@ -105,12 +114,15 @@ class AccountSvc:
         :param session:     AsyncSession
         :return:            bool
         """
-        stmt = select(auth_.Account.uid).where(auth_.Account.email == email)
-        exec_ = await session.exec(stmt)
-        if _ := exec_.one_or_none():
-            logger.warn(dict(message=f"Account {email} not found", id=email))
-            return False
-        return True
+        try:
+            stmt = select(auth_.Account.uid).where(auth_.Account.email == email)
+            exec_ = await session.exec(stmt)
+            if _ := exec_.one_or_none():
+                logger.warn(dict(message=f"Account {email} not found", id=email))
+                return False
+            return True
+        except Exception as _:
+            raise
 
 
     @staticmethod
@@ -188,4 +200,4 @@ class AccountSvc:
         except Exception as e:
             logger.error(dict(message=f"Failed to ban account {to_ban.id} authorized by {authorization.id}",
                               id=to_ban.id, extra=str(e)))
-            raise e
+            raise
