@@ -35,7 +35,7 @@ class Order(SQLModel, table=True):
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE', nullable=False)
     updated_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))
     created_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))  # time
-    # --
+
     exchange: 'Exchange' = Relationship(back_populates='orders')
     trades: list['Trade'] = Relationship(back_populates='order')
     account: 'Account' = Relationship(back_populates='orders')
@@ -58,7 +58,6 @@ class Order(SQLModel, table=True):
 class Trade(UpdatedAtMixin, SQLModel, table=True):
     __tablename__ = 'xch_trade'
     id: str = Field(primary_key=True, unique=True, nullable=False)
-    # exchange_orderid: str = Field(nullable=True)
     asset: str = Field(max_length=20, nullable=False)
     symbol: str = Field(max_length=20, nullable=False)
     price: str = Field(max_length=199, nullable=False)
@@ -72,7 +71,7 @@ class Trade(UpdatedAtMixin, SQLModel, table=True):
     exchange_id: int = Field(primary_key=True, foreign_key='xch_exchange.id', ondelete='CASCADE')
     account_id: int = Field(foreign_key='auth_account.id', ondelete='CASCADE')
     created_at: datetime = Field(sa_column=Col(DateTime(timezone=True), nullable=False))  # time
-    # --
+
     order: 'Order' = Relationship(back_populates='trades')
     exchange: 'Exchange' = Relationship(back_populates='trades')
     account: 'Account' = Relationship(back_populates='trades')

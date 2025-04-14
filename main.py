@@ -19,7 +19,7 @@ from authentication import Account, Profile, Address
 from core import SessionDep
 from core.models import Option
 # from routes import accountrouter, authrouter
-from dev.devroutes import devrouter
+from dev.seeder import devrouter
 from tests.routes import testrouter
 
 

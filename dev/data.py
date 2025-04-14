@@ -68,7 +68,6 @@ SEED_ACCOUNTS = {
     ],
 }
 
-starting_pointer = json.dumps({'next': 0, 'prev': 0})
 SEED_USER_OPTIONS = [
     {'name': 'date_format', 'value': '%b %d, %Y', 'description': 'Date format'},
     {'name': 'time_format', 'value': '%I:%M%p', 'description': 'Time format'},
@@ -79,8 +78,8 @@ SEED_USER_OPTIONS = [
     {'name': 'comment_order', 'value': 'desc', 'description': 'Ordering of comments'},
     # {'name': 'comments_blacklist', 'value': '', 'description': ''},
     {'name': 'max_upload_mb', 'value': '5', 'description': ''},
-    {'name': 'pointer_all_orders', 'value': starting_pointer, 'description': 'Date to start fetching all orders'},
-    {'name': 'pointer_all_trades', 'value': starting_pointer, 'description': 'Date to start fetching all trades'},
+    {'name': 'pointer_all_orders', 'value': '0', 'description': 'Date to start fetching all orders'},
+    {'name': 'pointer_all_trades', 'value': '0', 'description': 'Date to start fetching all trades'},
 ]
 
 SEED_SYSTEM_OPTIONS = [

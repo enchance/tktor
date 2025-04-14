@@ -216,22 +216,15 @@ class TestAccount:
         assert account.options.items_per_page == new_int
         assert accountdb.options.items_per_page == new_int
 
-        prev_timestamp = account.options.pointer_all_orders['next']
-        next_timestamp = arrow.utcnow().int_timestamp + 1
-        await account.update_options({
-            'pointer_all_orders': {
-                'prev': prev_timestamp,
-                'next': next_timestamp,
-            }
-        }, session=session)
+        nowts = arrow.utcnow().int_timestamp + 1
+        await account.update_options({'pointer_all_orders': nowts}, session=session)
+
         account = await Account.get(account_.uid, session=session)
         accountdb = await Account.get(account_.uid, use_db=True, session=session)
         assert account.is_cache
         assert not accountdb.is_cache
-        assert account.options.pointer_all_orders['prev'] == prev_timestamp
-        assert account.options.pointer_all_orders['next'] == next_timestamp
-        assert accountdb.options.pointer_all_orders['prev'] == prev_timestamp
-        assert accountdb.options.pointer_all_orders['next'] == next_timestamp
+        assert account.options.pointer_all_orders == nowts
+        assert accountdb.options.pointer_all_orders == nowts
 
 
     # @mark.focus

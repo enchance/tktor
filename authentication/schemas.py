@@ -92,10 +92,8 @@ class UserOptions(BaseModel):
     comment_order: str
     # comments_blacklist: set[str]
     max_upload_mb: int
-    pointer_all_orders: dict[str, int]
-    pointer_all_trades: dict[str, int]
-
-    # TODO: Clean this up and use a single int instead of json
+    pointer_all_orders: int
+    pointer_all_trades: int
 
     # @field_validator('default_role', mode='before')
     # def transform_default_role(cls, val):
@@ -111,20 +109,20 @@ class UserOptions(BaseModel):
     #             return cleaned
     #     return val
 
-    @field_validator('pointer_all_orders', mode='before')
-    @classmethod
-    def parse_pointer_orders(cls, val):
-        if isinstance(val, str):
-            return json.loads(val)
-        return val
-
-
-    @field_validator('pointer_all_trades', mode='before')
-    @classmethod
-    def parse_pointer_trades(cls, val):
-        if isinstance(val, str):
-            return json.loads(val)
-        return val
+    # @field_validator('pointer_all_orders', mode='before')
+    # @classmethod
+    # def parse_pointer_orders(cls, val):
+    #     if isinstance(val, str):
+    #         return json.loads(val)
+    #     return val
+    #
+    #
+    # @field_validator('pointer_all_trades', mode='before')
+    # @classmethod
+    # def parse_pointer_trades(cls, val):
+    #     if isinstance(val, str):
+    #         return json.loads(val)
+    #     return val
 
 
 # TESTME: Untested

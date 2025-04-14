@@ -24,20 +24,20 @@ class OptionsSvc:
         for option in rows:
             for key in to_save.keys():
                 if option.name == key:
-                    if option.name in ['pointer_all_orders', 'pointer_all_trades']:
-                        if option.value == json.dumps(to_save[key]):
-                            break
-                        option.value = json.dumps(to_save[key])
-                        session.add(option)
-                        ll.append(key)
+                    # if option.name in ['pointer_all_orders', 'pointer_all_trades']:
+                    #     if option.value == json.dumps(to_save[key]):
+                    #         break
+                    #     option.value = json.dumps(to_save[key])
+                    #     session.add(option)
+                    #     ll.append(key)
+                    #     break
+                    # else:
+                    if option.value == to_save[key]:
                         break
-                    else:
-                        if option.value == to_save[key]:
-                            break
-                        option.value = str(to_save[key])
-                        session.add(option)
-                        ll.append(key)
-                        break
+                    option.value = str(to_save[key])
+                    session.add(option)
+                    ll.append(key)
+                    break
         if ll:
             await session.commit()
         return ll

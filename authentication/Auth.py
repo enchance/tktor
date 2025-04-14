@@ -17,6 +17,7 @@ from exchange import Order, Trade, Wallet, APIKeys
 
 if TYPE_CHECKING:
     from . import RoleSvc
+    from authentication import UserOptions
 
 
 class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
@@ -123,17 +124,17 @@ class Account(MetaMixin, IntPkMixin, DTMixin, SQLModel, table=True):
 
 
     @property
-    def options(self) -> Union['UserOptions', None]:  # noqa
+    def options(self) -> 'UserOptions':
         """Generate the options for the account."""
         try:
             options_cache = schemas.AccountCache.get(self.uid).options  # noqa
             return schemas.UserOptions(**options_cache)
         except NotFoundError:
             # TODO: Recache account with Celery
-            return
+            raise
         except Exception as e:
             logger.error(message=str(e), uid=self.uid)  # noqa
-            return
+            raise
 
 
     @classmethod
